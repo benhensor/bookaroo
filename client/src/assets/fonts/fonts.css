@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'Poppins';
+  src:  url('./poppins/Poppins-Light.ttf') format('truetype'),
+        url('./poppins/Poppins-Regular.ttf') format('truetype'),
+        url('./poppins/Poppins-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'SulphurPoint';
+  src:  url('./sulphur_point/SulphurPoint-Light.ttf') format('truetype'),
+        url('./sulphur_point/SulphurPoint-Regular.ttf') format('truetype'),
+        url('./sulphur_point/SulphurPoint-Bold.ttf') format('truetype');
+}
