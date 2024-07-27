@@ -3,47 +3,42 @@ import {
 	BrowserRouter as Router,
 	Routes,
 	Route,
-	Navigate,
 } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { AuthProvider } from './context/AuthContext'
+import { UserProvider } from './context/UserContext'
 import Header from './components/header/Header'
+import Home from './pages/Home'
+import Listing from './pages/Listing'
+import Browse from './pages/Browse'
 import Login from './components/login/Login'
-import CompleteProfile from './components/completeProfile/CompleteProfile'
-import Dashboard from './pages/Dashboard'
+import Register from './components/register/Register'
+import Dashboard from './components/dashboard/Dashboard'
+import ProtectedRoute from './components/protectedRoute/ProtectedRoute'
 
-const ProtectedRoute = ({ children }) => {
-	const { user, loading } = useAuth()
-  if (loading) {
-    return <div>Loading...</div>
-  }
-	return user ? children : <Navigate to="/login" />
-}
 
 function App() {
 	return (
 		<AuthProvider>
-			<div className="App">
-				<Header />
-				<main>
-					<Router>
+			<UserProvider>
+				<Router>
+					<Header />
+					<main>
 						<Routes>
+							<Route path="/register" element={<Register />} />
 							<Route path="/login" element={<Login />} />
-							<Route
-								path="/complete-profile"
-								element={<CompleteProfile />}
-							/>
-							<Route
-								path="/"
-								element={
-									<ProtectedRoute>
-										<Dashboard />
-									</ProtectedRoute>
-								}
-							/>
+							<Route path="/dashboard" element={
+								<ProtectedRoute>
+									<Dashboard />
+								</ProtectedRoute>
+							} />
+							<Route path="/add-book" element={<Listing />} />
+							<Route path="*" element={<Home />}/>
+							<Route path="/list" element={<Listing />} />
+							<Route path="/browse" element={<Browse />} />
 						</Routes>
-					</Router>
-				</main>
-			</div>
+					</main>
+				</Router>
+			</UserProvider>
 		</AuthProvider>
 	)
 }

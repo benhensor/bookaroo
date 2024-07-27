@@ -1,0 +1,209 @@
+import React, { useState, useEffect, useCallback } from 'react'
+import { useUser } from '../../context/UserContext'
+import styled from 'styled-components'
+import Genre from './Genre'
+import WordButton from '../buttons/WordButton'
+import Arrow from '../../icons/Arrow'
+
+export default function Dashboard() {
+	const { user, loading, getCurrentUser, updateUserPreferences } = useUser()
+	const [dropdownOpen, setDropdownOpen] = useState(false)
+	const [selectedPreferences, setSelectedPreferences] = useState([])
+	const [isClicked, setIsClicked] = useState(false)
+
+	const genres = [
+		'Mystery',
+		'Romance',
+		'Science Fiction',
+		'Fantasy',
+		'Thriller/Suspense',
+		'Historical Fiction',
+		'Young Adult',
+		'Horror',
+		'Non-Fiction',
+	]
+
+	useEffect(() => {
+		getCurrentUser()
+	}, [getCurrentUser])
+
+	useEffect(() => {
+		if (user && user.preferences) {
+			setSelectedPreferences(user.preferences)
+		} else {
+			setSelectedPreferences([])
+		}
+	}, [user])
+
+	const handleGenreSelect = (genre) => {
+		setSelectedPreferences((prevPreferences) => {
+			if (prevPreferences.includes(genre)) {
+				return prevPreferences.filter((g) => g !== genre)
+			} else {
+				return [...prevPreferences, genre]
+			}
+		})
+	}
+
+	const handleSavePreferences = useCallback(() => {
+    const preferencesChanged = JSON.stringify(selectedPreferences) !== JSON.stringify(user.preferences)
+
+    if (!preferencesChanged) {
+      setDropdownOpen(false)
+      setIsClicked(false)
+      return
+    }
+
+    updateUserPreferences(selectedPreferences)
+      .then(() => {
+        setDropdownOpen(false)
+        setIsClicked(false)
+      })
+      .catch((error) => {
+        console.error('Error saving preferences:', error)
+      })
+  }, [selectedPreferences, updateUserPreferences, user.preferences])
+
+	const toggleDropdown = () => {
+		setDropdownOpen((prevState) => !prevState)
+		setIsClicked((prevState) => !prevState)
+	}
+
+	if (loading)
+		return (
+			<section>
+				<div>Loading...</div>
+			</section>
+		)
+	if (!user)
+		return (
+			<section>
+				<div>No user data available</div>
+			</section>
+		)
+
+	return (
+		<section>
+			<Container>
+				<Details>
+					<h1>Dashboard</h1>
+					<p>Welcome, {user.username}!</p>
+					<Controls>
+						<Preferences>
+							<p>
+                What&nbsp;
+                <WordButton text="genres" onClick={dropdownOpen ? handleSavePreferences : toggleDropdown}/>
+                &nbsp;are you into? <Arrow isClicked={isClicked} />
+              </p>
+              {dropdownOpen && (
+                <Dropdown
+                  $isClicked={isClicked}
+                >
+                  {genres.map((genre) => (
+                    <Genre
+                      key={genre}
+                      name={genre}
+                      isSelected={selectedPreferences.includes(
+                        genre
+                      )}
+                      onSelect={handleGenreSelect}
+                    />
+                  ))}
+              
+                </Dropdown>
+              )}
+						</Preferences>
+            
+						<p>
+							<WordButton to="/list" text="List" />
+							&nbsp;your books here...
+						</p>
+						<p>
+							or&nbsp;
+							<WordButton to="/browse" text="search" />
+							&nbsp;for available books.
+						</p>
+					</Controls>
+				</Details>
+			</Container>
+			<div>
+				<h2>Your Listings</h2>
+			</div>
+			<div>
+				<h2>Recommended for You</h2>
+			</div>
+		</section>
+	)
+}
+
+const Container = styled.div`
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: var(--lg);
+`
+
+const Details = styled.div`
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: var(--lg);
+	p {
+		display: flex;
+		align-items: center;
+		margin-bottom: var(--xs);
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+`
+
+const Controls = styled.div`
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	margin: var(--lg) 0;
+	button {
+		color: var(--dkGreen);
+		font-size: 1.6rem;
+		text-align: left;
+		padding: 0;
+		border-radius: 0;
+		background: none;
+	}
+`
+
+const Preferences = styled.p`
+	position: relative;
+`
+
+const Dropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  overflow: hidden;
+  max-height: ${({ $isClicked }) => ($isClicked ? '50rem' : '0')}; /* Set a reasonable max-height for the open state */
+  opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
+  padding: ${({ $isClicked }) => ($isClicked ? 'var(--sm)' : '0')};
+  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--xs);
+  background: #fff;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  label {
+    font-size: 1.2rem;
+    margin-bottom: var(--xs);
+  }
+  input {
+    padding: var(--xs);
+    font-size: 1.2rem;
+    border: 1px solid #ccc;
+    border-radius: var(--xs);
+  }
+`;

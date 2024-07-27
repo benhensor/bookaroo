@@ -1,19 +1,6 @@
-import { Sequelize, DataTypes } from 'sequelize'
-import dotenv from 'dotenv'
+import { DataTypes } from 'sequelize'
+import sequelize from '../config/database.mjs'
 
-dotenv.config()
-
-const sequelize = new Sequelize(
-	process.env.DB_NAME,
-	process.env.DB_USERNAME,
-	process.env.DB_PASSWORD,
-	{
-		host: process.env.DB_HOST,
-		port: process.env.DB_PORT || 5432,
-		dialect: 'postgres',
-	}
-)
-  
 const User = sequelize.define(
 	'User',
 	{
@@ -22,28 +9,18 @@ const User = sequelize.define(
 			primaryKey: true,
 			autoIncrement: true,
 		},
-		firstName: {
-			type: DataTypes.STRING(50),
-			allowNull: true,
-			field: 'first_name',
-		},
-		lastName: {
-			type: DataTypes.STRING(50),
-			allowNull: true,
-			field: 'last_name',
-		},
 		username: {
 			type: DataTypes.STRING(50),
 			allowNull: true,
 		},
 		email: {
 			type: DataTypes.STRING(100),
-			allowNull: true,
+			allowNull: false,
 			unique: true,
-		}, 
+		},
 		password: {
-			type: DataTypes.STRING(50),
-			allowNull: true, // This can be null for OAuth users
+			type: DataTypes.STRING(120),
+			allowNull: false, 
 		},
 		phone: {
 			type: DataTypes.STRING(50),
@@ -75,16 +52,10 @@ const User = sequelize.define(
 			type: DataTypes.FLOAT,
 			allowNull: true,
 		},
-		googleId: {
-			type: DataTypes.STRING,
-			unique: true,
-			allowNull: false,
-			field: 'google_id',
-		},
 		preferences: {
 			type: DataTypes.ARRAY(DataTypes.STRING),
 			allowNull: true,
-		}
+		},
 	},
 	{
 		tableName: 'users',
@@ -92,4 +63,4 @@ const User = sequelize.define(
 	}
 )
 
-export { User, sequelize }
+export default User

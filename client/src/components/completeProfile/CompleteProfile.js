@@ -34,7 +34,7 @@ const CompleteProfile = () => {
 			)
 			console.log('Registration completed:', response.data)
 			setUser(response.data.user)
-			navigate('/')
+			navigate('/dashboard')
 		} catch (error) {
 			console.error('Error completing registration:', error)
 		}

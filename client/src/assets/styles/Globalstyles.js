@@ -5,6 +5,8 @@ const GlobalStyles = createGlobalStyle`
 
   :root {
 
+    ::-webkit-scrollbar {display:none;}
+
     // Colors
     --accentGreen: #10f98f;
     --accentLtGreen: #4fffb0;
@@ -16,6 +18,10 @@ const GlobalStyles = createGlobalStyle`
     --ltGreen: #d8e8d4;
     --white: #fff;
     --black: #000;
+    --danger: #ff4d4d;
+    --dangerDk: #cc0000;
+
+    // Fonts
 
     // Spacing
     --xs: .4rem;
@@ -23,6 +29,11 @@ const GlobalStyles = createGlobalStyle`
     --md: 1.6rem;
     --lg: 2.4rem;
     --xl: 3.2rem;
+
+    // Transitions
+    --fast: all .12s ease;
+    --medium: all .24s ease;
+    --slow: all .36s ease;
   }
 
   *, *::before, *::after {
@@ -32,6 +43,7 @@ const GlobalStyles = createGlobalStyle`
   }
 
   html {
+    user-select: none;
     font-size: 62.5%;
   }
 
@@ -40,6 +52,7 @@ const GlobalStyles = createGlobalStyle`
     font-size: 1.6rem;
     line-height: 1.6;
     color: var(--blkGreen);
+    overflow-x: hidden;
   }
 
   main {
@@ -53,10 +66,10 @@ const GlobalStyles = createGlobalStyle`
   }
 
   button {
-    padding: var(--sm) var(--md);
     border: none;
     border-radius: var(--xs);
     cursor: pointer;
+    transition: var(--fast);
   }
 
   @media only screen and (max-width: 999px) {
@@ -69,7 +82,6 @@ const GlobalStyles = createGlobalStyle`
       padding: var(--sm);
     }
   }
-
 `
 
 export default GlobalStyles;
