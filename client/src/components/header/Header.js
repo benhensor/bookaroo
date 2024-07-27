@@ -125,7 +125,7 @@ export default function Header() {
 									</label>
 									<div className="menu-buttons">
                     <ActionButton text="Submit" />
-                    <LinkButton to="/login" text="Sign Out" />
+                    <LinkButton to="/" text="Sign Out" />
                   </div>
 								</form>
 							</DetailsDiv>
