@@ -20,7 +20,7 @@ export default function Listing() {
 		author: '',
 		publishedDate: '',
 		publisher: '',
-		genre: '',
+		category: '',
 		condition: '',
 		notes: '',
 		userId: user?.id || '',
@@ -39,97 +39,122 @@ export default function Listing() {
 			author: '',
 			publishedDate: '',
 			publisher: '',
-			genre: '',
+			category: '',
 			condition: '',
 			notes: '',
 			userId: user?.id || '',
 		})
-	}, [user]);
+	}, [user])
 
 	// Reset state on component mount
 	useEffect(() => {
-		handleReset();
-	}, [user, handleReset]);
+		handleReset()
+	}, [user, handleReset])
 
 	const handleSearch = async (e) => {
-		e.preventDefault();
+		e.preventDefault()
 		try {
 			const response = await axios.get(
-				`https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}`
-			);
-			setBookResults(response.data.docs || []);
-			if (!response.data.docs || response.data.docs.length === 0) {
-				setError('No books found. Please try a different search term.');
+				`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+					searchTerm
+				)}`
+			)
+			setBookResults(response.data.items || [])
+			if (!response.data.items || response.data.items.length === 0) {
+				setError('No books found. Please try a different search term.')
 			} else {
-				setError('');
+				setError('')
 			}
 		} catch (error) {
-			console.error('Error fetching books:', error);
+			console.error('Error fetching books:', error)
 			setError(
 				'An error occurred while searching for books. Please try again later.'
-			);
+			)
 		}
-	};
+	}
 
-	const handleSelectBook = (e) => {
-		const bookKey = e.target.value;
-		const book = bookResults.find((book) => book.key === bookKey);
+	const handleSelectBook = async (e) => {
+		const bookId = e.target.value
+		const book = bookResults.find((book) => book.id === bookId)
+
 		if (book) {
-			const isbnValue = book.isbn ? book.isbn[0] : '';
-			setIsbn(isbnValue);
-			setBookData({
-				isbn: isbnValue || '',
-				coverImg: `https://covers.openlibrary.org/b/isbn/${isbnValue}-L.jpg` || '',
-				title: book.title || '',
-				author: book.author_name?.join(', ') || '',
-				publishedDate: book.first_publish_year || '',
-				publisher: book.publisher?.[0] || '',
-				genre: book.subject?.[0] || '',
-				condition: '',
-				notes: '',
-				userId: user?.id || '',
-			});
-			setError(''); // Clear any previous errors
+			try {
+				// Fetch detailed book information using the selfLink
+				const detailsResponse = await axios.get(book.selfLink)
+
+				const detailedBook = detailsResponse.data
+				const isbnValue =
+					detailedBook.volumeInfo.industryIdentifiers?.find(
+						(id) => id.type === 'ISBN_13'
+					)?.identifier || ''
+
+				setIsbn(isbnValue)
+				setBookData({
+					isbn: isbnValue || '',
+					coverImg:
+						detailedBook.volumeInfo.imageLinks?.large ||
+						detailedBook.volumeInfo.imageLinks?.medium ||
+						detailedBook.volumeInfo.imageLinks?.small ||
+						detailedBook.volumeInfo.imageLinks?.thumbnail ||
+						'',
+					title: detailedBook.volumeInfo.title || '',
+					author: detailedBook.volumeInfo.authors?.join(', ') || '',
+					publishedDate: detailedBook.volumeInfo.publishedDate || '',
+					publisher: detailedBook.volumeInfo.publisher || '',
+					category: detailedBook.volumeInfo.categories?.[0] || '',
+					condition: '',
+					notes: '',
+					userId: user?.id || '',
+				})
+				setError('') // Clear any previous errors
+			} catch (error) {
+				console.error('Error fetching detailed book info:', error)
+				setError('An error occurred while retrieving book details.')
+			}
 		}
-	};
+	}
 
 	const handleInputChange = (e) => {
-		const { name, value } = e.target;
+		const { name, value } = e.target
 		setBookData((prevData) => ({
 			...prevData,
 			[name]: value,
-		}));
-	};
+		}))
+	}
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		const token = sessionStorage.getItem('authToken');
+		e.preventDefault()
+		const token = sessionStorage.getItem('authToken')
 
 		if (!bookData.title) {
-			setError('Please select a book from the list.');
-			return;
+			setError('Please select a book from the list.')
+			return
 		}
 
 		if (!bookData.condition || bookData.condition === 'none') {
-			setError('Please select the book condition.');
-			return;
+			setError('Please select the book condition.')
+			return
 		}
 
 		try {
-			await axios.post(`${process.env.REACT_APP_API_URL}/api/books/list`, bookData, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			setMessage('Book listed successfully!');
-			handleReset();
+			await axios.post(
+				`${process.env.REACT_APP_API_URL}/api/books/list`,
+				bookData,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+			setMessage('Book listed successfully!')
+			handleReset()
 		} catch (error) {
-			console.error('Error submitting book listing:', error);
+			console.error('Error submitting book listing:', error)
 			setError(
 				'An error occurred while submitting your listing. Please try again.'
-			);
+			)
 		}
-	};
+	}
 
 	return (
 		<section>
@@ -159,12 +184,23 @@ export default function Listing() {
 						Select a Book:
 						<select
 							onChange={handleSelectBook}
-							value={bookData.title ? bookResults.find((book) => book.title === bookData.title)?.key : ''}
+							value={
+								bookData.title
+									? bookResults.find(
+											(book) =>
+												book.volumeInfo.title ===
+												bookData.title
+									  )?.id
+									: ''
+							}
 						>
 							<option value="">Select a Book</option>
 							{bookResults.map((book) => (
-								<option key={book.key} value={book.key}>
-									{book.title} - {book.author_name ? book.author_name.join(', ') : 'Unknown Author'}
+								<option key={book.id} value={book.id}>
+									{book.volumeInfo.title} -{' '}
+									{book.volumeInfo.authors
+										? book.volumeInfo.authors.join(', ')
+										: 'Unknown Author'}
 								</option>
 							))}
 						</select>
@@ -174,33 +210,47 @@ export default function Listing() {
 							<h2>Selected Book</h2>
 							{isbn && (
 								<img
-									src={`https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`}
+									src={bookData.coverImg}
 									alt={bookData.title}
 								/>
 							)}
 							<p>{bookData.title}</p>
-							<p><span>{bookData.author || 'Unknown Author'}</span></p>
+							<p>
+								<span>
+									{bookData.author || 'Unknown Author'}
+								</span>
+							</p>
 							<label>
-								Genre:
+								category:
 								<select
-									name="genre"
-									value={bookData.genre}
+									name="category"
+									value={bookData.category}
 									onChange={handleInputChange}
 								>
 									<option value="none" defaultValue>
-										Select Genre
+										Select category
 									</option>
 									<option value="Mystery">Mystery</option>
 									<option value="Comedy">Comedy</option>
 									<option value="Romance">Romance</option>
-									<option value="Science Fiction">Science Fiction</option>
+									<option value="Science Fiction">
+										Science Fiction
+									</option>
 									<option value="Fantasy">Fantasy</option>
-									<option value="Thriller/Suspense">Thriller/Suspense</option>
-									<option value="Historical Fiction">Historical Fiction</option>
-									<option value="Young Adult">Young Adult</option>
+									<option value="Thriller/Suspense">
+										Thriller/Suspense
+									</option>
+									<option value="Historical Fiction">
+										Historical Fiction
+									</option>
+									<option value="Young Adult">
+										Young Adult
+									</option>
 									<option value="Horror">Horror</option>
 									<option value="Fiction">Fiction</option>
-									<option value="Non-fiction">Non-fiction</option>
+									<option value="Non-fiction">
+										Non-fiction
+									</option>
 								</select>
 							</label>
 							<label>
@@ -233,7 +283,7 @@ export default function Listing() {
 				</form>
 			)}
 		</section>
-	);
+	)
 }
 
 const ListingHeader = styled.div`

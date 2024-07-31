@@ -11,7 +11,7 @@ export default function Dashboard() {
 	const [selectedPreferences, setSelectedPreferences] = useState([])
 	const [isClicked, setIsClicked] = useState(false)
 
-	const genres = [
+	const categories = [
 		'Mystery',
 		'Comedy',
 		'Romance',
@@ -114,7 +114,7 @@ export default function Dashboard() {
 								<p>
 									What&nbsp;
 									<WordButton
-										text="genres"
+										text="sort of books"
 										onClick={
 											dropdownOpen
 												? handleSavePreferences
@@ -127,7 +127,7 @@ export default function Dashboard() {
 							</Sentence>
 
 							<Dropdown $isClicked={isClicked}>
-								{genres.map((genre) => (
+								{categories.map((genre) => (
 									<Genre
 										key={genre}
 										name={genre}

@@ -9,7 +9,7 @@ const Book = sequelize.define('Book', {
 		allowNull: false,
 	},
 	coverImg: {
-		type: DataTypes.STRING(255),
+		type: DataTypes.STRING(300),
 		allowNull: true,
 		field: 'cover_img',
 	},
@@ -30,8 +30,8 @@ const Book = sequelize.define('Book', {
 		type: DataTypes.STRING(100),
 		allowNull: true,
 	},
-	genre: {
-		type: DataTypes.STRING(50),
+	category: {
+		type: DataTypes.STRING(200),
 		allowNull: true,
 	},
 	condition: {
