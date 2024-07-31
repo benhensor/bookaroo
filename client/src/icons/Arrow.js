@@ -22,6 +22,8 @@ export default function Arrow({ isClicked }) {
 }
 
 const ArrowWrapper = styled.div`
+    position: relative;
+    top: -2px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -29,5 +31,12 @@ const ArrowWrapper = styled.div`
     width: 1.2rem;
     height: .8rem;
     transition: transform .12s ease-in-out;
-    transform: ${({ $isClicked }) => $isClicked ? 'rotate(-180deg)' : 'rotate(0deg)'}; 
+    transform: ${({ $isClicked }) => $isClicked ? 'rotate(-180deg)' : 'rotate(0deg)'};
+    svg {
+        path {
+            transition: var(--fast);
+            stroke: ${({ $isClicked }) => $isClicked ? 'var(--accentGreen)' : 'var(--dkGreen)'};
+        }
+        
+    }
 `

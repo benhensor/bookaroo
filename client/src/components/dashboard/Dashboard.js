@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useUser } from '../../context/UserContext'
+import { useAuth } from '../../context/AuthContext'
 import styled from 'styled-components'
 import Genre from './Genre'
 import WordButton from '../buttons/WordButton'
 import Arrow from '../../icons/Arrow'
 
 export default function Dashboard() {
-	const { user, loading, getCurrentUser, updateUserPreferences } = useUser()
+	const { user, isLoading, updateUserPreferences } = useAuth() // Use loading from AuthContext
 	const [dropdownOpen, setDropdownOpen] = useState(false)
 	const [selectedPreferences, setSelectedPreferences] = useState([])
 	const [isClicked, setIsClicked] = useState(false)
 
 	const genres = [
 		'Mystery',
+		'Comedy',
 		'Romance',
 		'Science Fiction',
 		'Fantasy',
@@ -20,14 +21,12 @@ export default function Dashboard() {
 		'Historical Fiction',
 		'Young Adult',
 		'Horror',
+		'Fiction',
 		'Non-Fiction',
 	]
 
 	useEffect(() => {
-		getCurrentUser()
-	}, [getCurrentUser])
-
-	useEffect(() => {
+		console.log('User:', user) // Debugging log
 		if (user && user.preferences) {
 			setSelectedPreferences(user.preferences)
 		} else {
@@ -46,35 +45,56 @@ export default function Dashboard() {
 	}
 
 	const handleSavePreferences = useCallback(() => {
-    const preferencesChanged = JSON.stringify(selectedPreferences) !== JSON.stringify(user.preferences)
+		console.log('handleSavePreferences called') // Debugging log
 
-    if (!preferencesChanged) {
-      setDropdownOpen(false)
-      setIsClicked(false)
-      return
-    }
+		if (!user) {
+			console.log('No user found') // Debugging log
+			setDropdownOpen(false)
+			setIsClicked(false)
+			return
+		}
 
-    updateUserPreferences(selectedPreferences)
-      .then(() => {
-        setDropdownOpen(false)
-        setIsClicked(false)
-      })
-      .catch((error) => {
-        console.error('Error saving preferences:', error)
-      })
-  }, [selectedPreferences, updateUserPreferences, user.preferences])
+		console.log('User:', user) // Debugging log
+		const currentPreferences = user.preferences || [] // Treat undefined preferences as an empty array
+
+		console.log('Current preferences:', currentPreferences) // Debugging log
+		console.log('Selected preferences:', selectedPreferences) // Debugging log
+
+		const preferencesChanged =
+			JSON.stringify(selectedPreferences) !==
+			JSON.stringify(currentPreferences)
+
+		if (!preferencesChanged) {
+			console.log('Preferences have not changed') // Debugging log
+			setDropdownOpen(false)
+			setIsClicked(false)
+			return
+		}
+
+		updateUserPreferences(selectedPreferences)
+			.then(() => {
+				console.log('Preferences saved successfully') // Debugging log
+				setDropdownOpen(false)
+				setIsClicked(false)
+			})
+			.catch((error) => {
+				console.error('Error saving preferences:', error)
+			})
+	}, [selectedPreferences, updateUserPreferences, user])
 
 	const toggleDropdown = () => {
 		setDropdownOpen((prevState) => !prevState)
 		setIsClicked((prevState) => !prevState)
 	}
 
-	if (loading)
+	if (isLoading) {
 		return (
 			<section>
 				<div>Loading...</div>
 			</section>
 		)
+	}
+
 	if (!user)
 		return (
 			<section>
@@ -90,30 +110,36 @@ export default function Dashboard() {
 					<p>Welcome, {user.username}!</p>
 					<Controls>
 						<Preferences>
-							<p>
-                What&nbsp;
-                <WordButton text="genres" onClick={dropdownOpen ? handleSavePreferences : toggleDropdown}/>
-                &nbsp;are you into? <Arrow isClicked={isClicked} />
-              </p>
-              {dropdownOpen && (
-                <Dropdown
-                  $isClicked={isClicked}
-                >
-                  {genres.map((genre) => (
-                    <Genre
-                      key={genre}
-                      name={genre}
-                      isSelected={selectedPreferences.includes(
-                        genre
-                      )}
-                      onSelect={handleGenreSelect}
-                    />
-                  ))}
-              
-                </Dropdown>
-              )}
+							<Sentence>
+								<p>
+									What&nbsp;
+									<WordButton
+										text="genres"
+										onClick={
+											dropdownOpen
+												? handleSavePreferences
+												: toggleDropdown
+										}
+									/>
+									&nbsp;are you into?
+								</p>
+								<Arrow isClicked={isClicked} />
+							</Sentence>
+
+							<Dropdown $isClicked={isClicked}>
+								{genres.map((genre) => (
+									<Genre
+										key={genre}
+										name={genre}
+										isSelected={selectedPreferences.includes(
+											genre
+										)}
+										onSelect={handleGenreSelect}
+									/>
+								))}
+							</Dropdown>
 						</Preferences>
-            
+
 						<p>
 							<WordButton to="/list" text="List" />
 							&nbsp;your books here...
@@ -174,36 +200,44 @@ const Controls = styled.div`
 	}
 `
 
-const Preferences = styled.p`
+const Preferences = styled.div`
 	position: relative;
 `
 
+const Sentence = styled.div`
+	display: flex;
+	align-items: center;
+`
+
 const Dropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  z-index: 1000;
-  overflow: hidden;
-  max-height: ${({ $isClicked }) => ($isClicked ? '50rem' : '0')}; /* Set a reasonable max-height for the open state */
-  opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
-  padding: ${({ $isClicked }) => ($isClicked ? 'var(--sm)' : '0')};
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-  border-radius: var(--xs);
-  background: #fff;
-  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-  label {
-    font-size: 1.2rem;
-    margin-bottom: var(--xs);
-  }
-  input {
-    padding: var(--xs);
-    font-size: 1.2rem;
-    border: 1px solid #ccc;
-    border-radius: var(--xs);
-  }
-`;
+	position: absolute;
+	top: 85%;
+	left: 0;
+	width: 100%;
+	z-index: 1000;
+	overflow: hidden;
+	max-height: ${({ $isClicked }) =>
+		$isClicked
+			? '50rem'
+			: '0'}; /* Set a reasonable max-height for the open state */
+	opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
+	padding: ${({ $isClicked }) => ($isClicked ? 'var(--sm)' : '0')};
+	box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+	display: flex;
+	flex-direction: column;
+	margin-top: 10px;
+	border: 1px solid #ccc;
+	border-radius: var(--xs);
+	background: #fff;
+	transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+	label {
+		font-size: 1.2rem;
+		margin-bottom: var(--xs);
+	}
+	input {
+		padding: var(--xs);
+		font-size: 1.2rem;
+		border: 1px solid #ccc;
+		border-radius: var(--xs);
+	}
+`

@@ -72,6 +72,36 @@ const GlobalStyles = createGlobalStyle`
     transition: var(--fast);
   }
 
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sm);
+    margin: 0 auto;
+    width: 40rem;
+    margin-top: var(--lg);
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sm);
+		font-size: 1.2rem;
+		margin-bottom: var(--xs);
+	}
+
+  input, select, textarea {
+		padding: var(--sm);
+		font-size: 1.4rem;
+		border: 1px solid #ccc;
+		border-radius: var(--xs);
+	}
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+
   @media only screen and (max-width: 999px) {
     section {
       padding: var(--sm) var(--md);
@@ -80,6 +110,9 @@ const GlobalStyles = createGlobalStyle`
   @media only screen and (max-width: 450px) {
     section {
       padding: var(--sm);
+    }
+    form {
+      width: 100%;
     }
   }
 `

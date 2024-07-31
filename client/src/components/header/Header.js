@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useAuth } from '../../context/AuthContext'
-import { useUser } from '../../context/UserContext'
 import ActionButton from '../buttons/ActionButton'
 import LinkButton from '../buttons/LinkButton'
 import Logo from '../../assets/images/bookarooLogo.webp'
 
 export default function Header() {
-	const { isAuthenticated } = useAuth()
-	const { user, updateUserDetails } = useUser()
+	const { isAuthenticated, user, updateUserDetails } = useAuth()
 
 	const [isUserClicked, setIsUserClicked] = useState(false)
 	const [isOpen, setIsOpen] = useState(false)
@@ -58,7 +56,7 @@ export default function Header() {
 							>
 								{firstInitial}
 							</User>
-							<DetailsDiv isOpen={isOpen}>
+							<DetailsDiv $isOpen={isOpen}>
 								<form onSubmit={handleFormSubmit}>
 									<label>
 										Username:
@@ -125,7 +123,7 @@ export default function Header() {
 									</label>
 									<div className="menu-buttons">
                     <ActionButton text="Submit" />
-                    <LinkButton to="/" text="Sign Out" />
+                    <LinkButton to="/" text="Sign Out" onClick={() => setIsOpen(!isOpen)}/>
                   </div>
 								</form>
 							</DetailsDiv>
@@ -220,9 +218,9 @@ const DetailsDiv = styled.div`
 	height: 100vh;
   width: 100vw;
 	background-color: #fff;
-  opacity: ${({ isOpen }) => (isOpen ? '1' : '0')};
-	transform: ${({ isOpen }) =>
-		isOpen ? 'translateX(0)' : 'translateX(100%)'};
+  opacity: ${({ $isOpen }) => ($isOpen ? '1' : '0')};
+	transform: ${({ $isOpen }) =>
+		$isOpen ? 'translateX(0)' : 'translateX(100%)'};
 	transition: var(--medium);
 	padding: var(--sm);
 	display: flex;

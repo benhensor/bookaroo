@@ -15,8 +15,6 @@ CREATE TABLE users (
 
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY NOT NULL,
-  first_name VARCHAR(50) NOT NULL,
-  last_name VARCHAR(50) NOT NULL,
   username VARCHAR(50) NOT NULL,
   email VARCHAR(100) NOT NULL,
   password VARCHAR(50) NOT NULL,
@@ -87,7 +85,8 @@ VALUES
 ("9780374104092", "/books/annihilation.png", "Annihilation", "Jeff VanderMeer", "Farrar, Straus and Giroux", "2014-02-04", "Science Fiction"),
 ("9798215872796", "/books/welcome-to-the-jungle.png", "Welcome to the Jungle", "Lauren Billups", "Torrid Books", "2015-03-01", "Fiction"),
 ("9780753553916", "/books/think-again.png", "Think Again", "Adam Grant", "WH Allen", "2021-02-02", "Non-fiction"),
-("9780358469988", "/books/a-thousand-steps-into-night.png", "A Thousand Steps into Night", "Ben Pastor", "HarperColl", "2022-03-01", "Fiction");
+("9780358469988", "/books/a-thousand-steps-into-night.png", "A Thousand Steps into Night", "Ben Pastor", "HarperCollins", "2022-03-01", "Fiction"),
+("9780008532819", "/books/yellowface.webp", "Yellowface", "Rebecca F. Kuang", "HarperCollins", "2023-05-25", "Fiction");
 
 
 CREATE TABLE listings (

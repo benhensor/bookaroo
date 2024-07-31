@@ -51,6 +51,8 @@ const Book = sequelize.define('Book', {
 			key: 'id',
 		},
 	},
+}, {
+	timestamps: false,
 })
 
 export default Book

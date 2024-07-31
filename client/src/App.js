@@ -4,8 +4,8 @@ import {
 	Routes,
 	Route,
 } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from 'react-query'
 import { AuthProvider } from './context/AuthContext'
-import { UserProvider } from './context/UserContext'
 import Header from './components/header/Header'
 import Home from './pages/Home'
 import Listing from './pages/Listing'
@@ -15,11 +15,12 @@ import Register from './components/register/Register'
 import Dashboard from './components/dashboard/Dashboard'
 import ProtectedRoute from './components/protectedRoute/ProtectedRoute'
 
+const queryClient = new QueryClient()
 
 function App() {
 	return (
-		<AuthProvider>
-			<UserProvider>
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
 				<Router>
 					<Header />
 					<main>
@@ -31,15 +32,22 @@ function App() {
 									<Dashboard />
 								</ProtectedRoute>
 							} />
-							<Route path="/add-book" element={<Listing />} />
+							<Route path="/list" element={
+								<ProtectedRoute>
+									<Listing />
+								</ProtectedRoute>
+							} />
+							<Route path="/browse" element={
+								<ProtectedRoute>
+									<Browse />
+								</ProtectedRoute>
+							} />
 							<Route path="*" element={<Home />}/>
-							<Route path="/list" element={<Listing />} />
-							<Route path="/browse" element={<Browse />} />
 						</Routes>
 					</main>
 				</Router>
-			</UserProvider>
-		</AuthProvider>
+			</AuthProvider>
+		</QueryClientProvider>
 	)
 }
 

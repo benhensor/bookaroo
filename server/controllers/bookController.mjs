@@ -1,8 +1,8 @@
 import Book from '../models/book.mjs'
 
 const createBook = async (req, res) => {
-	const { isbn, coverImg, title, author, publishedDate, publisher, genre, condition, notes } = req.body
-	const userId = req.user.id
+	const { isbn, coverImg, title, author, publishedDate, publisher, genre, condition, notes, userId } = req.body
+	
 	try {
 		const newBook = await Book.create({
 			isbn,

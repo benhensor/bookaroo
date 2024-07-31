@@ -4,9 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 
 const ProtectedRoute = ({ children }) => {
 	const { isAuthenticated } = useAuth()
-	const token = sessionStorage.getItem('token')
 
-	if (!isAuthenticated || !token) {
+	if (!isAuthenticated) {
 		return <Navigate to="/login" replace/>
 	}
 

@@ -1,24 +1,126 @@
-import React, { createContext, useState, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token'));
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const queryClient = useQueryClient();
 
-  const login = () => {
+  useEffect(() => {
+    console.log('User state:', user);
+    console.log('Is authenticated:', isAuthenticated);
+  }, [user, isAuthenticated]);  
+
+  const { isLoading } = useQuery(
+    'currentUser',
+    async () => {
+      const token = sessionStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/current`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return data;
+    },
+    {
+      onSuccess: (data) => {
+        setUser(data);
+        setIsAuthenticated(true);
+      },
+      onError: () => {
+        sessionStorage.removeItem('authToken');
+        setUser(null);
+        setIsAuthenticated(false);
+      },
+      enabled: !!sessionStorage.getItem('authToken'), // only run query if token exists
+    }
+  );
+
+  // Wrap login and logout in useCallback to prevent unnecessary re-creations
+  const login = useCallback(async (credentials) => {
+    // console.log('Login called'); // Debugging log
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/auth/login`,
+      credentials
+    );
+    const { token, user } = response.data;
+
+    sessionStorage.setItem('authToken', token);
+    setUser(user);
     setIsAuthenticated(true);
-  };
+    queryClient.invalidateQueries('currentUser'); // refetch the user data
+    // console.log('Logged in successfully'); // Debugging log
+  }, [queryClient]);
 
-  const logout = () => {
-    sessionStorage.removeItem('token');
+  const logout = useCallback(() => {
+    sessionStorage.removeItem('authToken');
+    setUser(null);
     setIsAuthenticated(false);
-  };
+    queryClient.clear();
+  }, [queryClient]);
 
-  const contextValue = useMemo(() => ({
-    isAuthenticated,
-    login,
-    logout,
-  }), [isAuthenticated]);
+  const updateUserDetails = async (updatedUser) => {
+		const token = sessionStorage.getItem('authToken')
+		if (!token) return
+
+		try {
+			const res = await axios.put(
+				`${process.env.REACT_APP_API_URL}/api/users/update`,
+				updatedUser,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+			setUser(res.data)
+		} catch (error) {
+			console.error('Error updating user data:', error)
+		}
+	}
+
+	const updateUserPreferences = async (preferences) => {
+		const token = sessionStorage.getItem('authToken')
+		if (!token) return
+
+		try {
+			await axios.put(
+				`${process.env.REACT_APP_API_URL}/api/users/preferences`,
+				{ preferences },
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+					withCredentials: true,
+				}
+			)
+
+			setUser((prevUser) => ({
+				...prevUser,
+				preferences: preferences,
+			}))
+		} catch (error) {
+			console.error('Error updating preferences:', error)
+			throw error
+		}
+	}
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoading, // React Query's loading state
+      login,
+      logout,
+      updateUserDetails,
+      updateUserPreferences,
+    }),
+    [user, isAuthenticated, isLoading, login, logout] // Now these functions are stable
+  );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };

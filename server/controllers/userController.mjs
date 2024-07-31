@@ -83,7 +83,7 @@ const updatePreferences = async (req, res) => {
 	console.log('Updating preferences:', userId, preferences)
 	try {
 		const [updatedRows] = await User.update(
-			{ preferences: preferences },
+			{ preferences },
 			{ where: { id: userId } }
 		)
 		if (updatedRows === 0) {
