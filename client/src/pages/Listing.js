@@ -4,6 +4,8 @@ import styled from 'styled-components'
 import axios from 'axios'
 import ActionButton from '../components/buttons/ActionButton'
 import WordButton from '../components/buttons/WordButton'
+import { PageHeader } from '../assets/styles/GlobalStyles'
+
 
 export default function Listing() {
 	const { user } = useAuth()
@@ -46,6 +48,23 @@ export default function Listing() {
 		})
 	}, [user])
 
+	const genres = [
+		'Mystery',
+		'Comedy',
+		'Romance',
+		'Science Fiction',
+		'Fantasy',
+		'Thriller/Suspense',
+		'Historical Fiction',
+		'Young Adult',
+		'Horror',
+		'Fiction',
+		'Non-Fiction',
+		'Biography & Autobiography',
+		'History',
+		'Politics',
+	]
+
 	// Reset state on component mount
 	useEffect(() => {
 		handleReset()
@@ -57,7 +76,7 @@ export default function Listing() {
 			const response = await axios.get(
 				`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
 					searchTerm
-				)}`
+				)}&country=UK`
 			)
 			setBookResults(response.data.items || [])
 			if (!response.data.items || response.data.items.length === 0) {
@@ -71,6 +90,13 @@ export default function Listing() {
 				'An error occurred while searching for books. Please try again later.'
 			)
 		}
+	}
+
+	const ensureHttps = (url) => {
+		if (url.startsWith('http:')) {
+			return url.replace('http:', 'https:')
+		}
+		return url
 	}
 
 	const handleSelectBook = async (e) => {
@@ -91,21 +117,24 @@ export default function Listing() {
 				setIsbn(isbnValue)
 				setBookData({
 					isbn: isbnValue || '',
-					coverImg:
-						detailedBook.volumeInfo.imageLinks?.large ||
-						detailedBook.volumeInfo.imageLinks?.medium ||
-						detailedBook.volumeInfo.imageLinks?.small ||
-						detailedBook.volumeInfo.imageLinks?.thumbnail ||
-						'',
+					coverImg: ensureHttps(
+						detailedBook.volumeInfo.imageLinks.extraLarge ||
+							detailedBook.volumeInfo.imageLinks.large ||
+							detailedBook.volumeInfo.imageLinks.medium ||
+							detailedBook.volumeInfo.imageLinks.small ||
+							detailedBook.volumeInfo.imageLinks.thumbnail ||
+							''
+					),
 					title: detailedBook.volumeInfo.title || '',
 					author: detailedBook.volumeInfo.authors?.join(', ') || '',
 					publishedDate: detailedBook.volumeInfo.publishedDate || '',
 					publisher: detailedBook.volumeInfo.publisher || '',
-					category: detailedBook.volumeInfo.categories?.[0] || '',
+					category: bookData.category || '',
 					condition: '',
 					notes: '',
 					userId: user?.id || '',
 				})
+				// console.log('Book data:', detailedBook)
 				setError('') // Clear any previous errors
 			} catch (error) {
 				console.error('Error fetching detailed book info:', error)
@@ -115,53 +144,64 @@ export default function Listing() {
 	}
 
 	const handleInputChange = (e) => {
-		const { name, value } = e.target
-		setBookData((prevData) => ({
-			...prevData,
-			[name]: value,
-		}))
-	}
+    const { name, value } = e.target;
+
+    setBookData((prevData) => ({
+        ...prevData,
+        [name]: name === 'category' ? [value] : value, // Store as an array with one element
+    }));
+	};
 
 	const handleSubmit = async (e) => {
-		e.preventDefault()
-		const token = sessionStorage.getItem('authToken')
-
-		if (!bookData.title) {
-			setError('Please select a book from the list.')
-			return
+		e.preventDefault();
+		const token = sessionStorage.getItem('authToken');
+	
+		// Validate fields before submission
+		const validData = {
+			isbn: bookData.isbn || '',
+			coverImg: bookData.coverImg || '',
+			title: bookData.title || '',
+			author: bookData.author || '',
+			publishedDate: bookData.publishedDate || '',
+			publisher: bookData.publisher || '',
+			category: bookData.category.length > 0 ? bookData.category : ['Unknown'], // Ensure it's always an array
+			condition: bookData.condition || 'Unknown',
+			notes: bookData.notes || '',
+			userId: bookData.userId || user?.id || '',
+		};
+	
+		console.log('Book data:', validData);
+	
+		if (!validData.title) {
+			setError('Please select a book from the list.');
+			return;
 		}
-
-		if (!bookData.condition || bookData.condition === 'none') {
-			setError('Please select the book condition.')
-			return
+	
+		if (!validData.condition || validData.condition === 'none') {
+			setError('Please select the book condition.');
+			return;
 		}
-
+	
 		try {
-			await axios.post(
-				`${process.env.REACT_APP_API_URL}/api/books/list`,
-				bookData,
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			)
-			setMessage('Book listed successfully!')
-			handleReset()
+			await axios.post(`${process.env.REACT_APP_API_URL}/api/books/list`, validData, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			setMessage('Book listed successfully!');
+			handleReset();
 		} catch (error) {
-			console.error('Error submitting book listing:', error)
-			setError(
-				'An error occurred while submitting your listing. Please try again.'
-			)
+			console.error('Error submitting book listing:', error);
+			setError('An error occurred while submitting your listing. Please try again.');
 		}
-	}
+	};
 
 	return (
 		<section>
-			<ListingHeader>
+			<PageHeader>
 				<h1>Add Book</h1>
 				<WordButton to="/dashboard" text="Return" />
-			</ListingHeader>
+			</PageHeader>
 
 			<form onSubmit={handleSearch}>
 				<label>
@@ -209,10 +249,13 @@ export default function Listing() {
 						<>
 							<h2>Selected Book</h2>
 							{isbn && (
-								<img
-									src={bookData.coverImg}
-									alt={bookData.title}
-								/>
+								<>
+									{/* {console.log('Selected book:', bookData.coverImg)} */}
+									<img
+										src={bookData.coverImg}
+										alt={bookData.title}
+									/>
+								</>
 							)}
 							<p>{bookData.title}</p>
 							<p>
@@ -220,39 +263,23 @@ export default function Listing() {
 									{bookData.author || 'Unknown Author'}
 								</span>
 							</p>
+
 							<label>
-								category:
-								<select
-									name="category"
-									value={bookData.category}
-									onChange={handleInputChange}
-								>
-									<option value="none" defaultValue>
-										Select category
-									</option>
-									<option value="Mystery">Mystery</option>
-									<option value="Comedy">Comedy</option>
-									<option value="Romance">Romance</option>
-									<option value="Science Fiction">
-										Science Fiction
-									</option>
-									<option value="Fantasy">Fantasy</option>
-									<option value="Thriller/Suspense">
-										Thriller/Suspense
-									</option>
-									<option value="Historical Fiction">
-										Historical Fiction
-									</option>
-									<option value="Young Adult">
-										Young Adult
-									</option>
-									<option value="Horror">Horror</option>
-									<option value="Fiction">Fiction</option>
-									<option value="Non-fiction">
-										Non-fiction
-									</option>
-								</select>
-							</label>
+                Genre:
+                <select
+                  name="category"
+                  value={bookData.category[0] || ''}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Genre</option>
+                  {genres.map((genre) => (
+                    <option key={genre} value={genre}>
+                      {genre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
 							<label>
 								Condition:
 								<select
@@ -285,14 +312,6 @@ export default function Listing() {
 		</section>
 	)
 }
-
-const ListingHeader = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	max-width: 40rem;
-	margin: 0 auto;
-`
 
 const ErrorMessage = styled.p`
 	color: red;

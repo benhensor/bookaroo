@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import '../fonts/fonts.css';
 
 const GlobalStyles = createGlobalStyle`
@@ -55,6 +55,11 @@ const GlobalStyles = createGlobalStyle`
     overflow-x: hidden;
   }
 
+  h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+  }
+
   main {
     margin-top: 6.4rem;
   }
@@ -94,6 +99,10 @@ const GlobalStyles = createGlobalStyle`
 		font-size: 1.4rem;
 		border: 1px solid #ccc;
 		border-radius: var(--xs);
+    &:focus {
+      outline: none;
+      border-color: var(--accentGreen);
+    }
 	}
 
   img {
@@ -115,6 +124,14 @@ const GlobalStyles = createGlobalStyle`
       width: 100%;
     }
   }
+`
+
+export const PageHeader = styled.div`
+  display: flex;
+	justify-content: space-between;
+	align-items: center;
+	max-width: 40rem;
+	margin: 0 auto;
 `
 
 export default GlobalStyles;

@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import ActionButton from '../buttons/ActionButton'
 import LinkButton from '../buttons/LinkButton'
 import Logo from '../../assets/images/bookarooLogo.webp'
 
 export default function Header() {
-	const { isAuthenticated, user, updateUserDetails } = useAuth()
-
+	const { isAuthenticated, user, updateUserDetails, logout } = useAuth()
+	const navigate = useNavigate()
 	const [isUserClicked, setIsUserClicked] = useState(false)
 	const [isOpen, setIsOpen] = useState(false)
 	const [formData, setFormData] = useState({
@@ -35,6 +36,13 @@ export default function Header() {
 		updateUserDetails(formData) 
     setIsOpen(false)
 	}
+
+	const handleLogout = () => {
+		logout()
+		setIsOpen(false)
+		navigate('/')
+	}
+
 
 	const firstInitial = user && user.username ? user.username.charAt(0) : null
 
@@ -123,7 +131,7 @@ export default function Header() {
 									</label>
 									<div className="menu-buttons">
                     <ActionButton text="Submit" />
-                    <LinkButton to="/" text="Sign Out" onClick={() => setIsOpen(!isOpen)}/>
+                    <LinkButton to="/" text="Sign Out" onClick={handleLogout} />
                   </div>
 								</form>
 							</DetailsDiv>
@@ -161,10 +169,12 @@ const LogoContainer = styled.div`
 	align-items: center;
 	width: fit-content;
 	p {
-		font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+		font-size: clamp(2.5rem, 2.5vw, 4.5rem);
+		letter-spacing: .1rem;
+		line-height: 1em;
 		font-weight: 700;
 		color: var(--blkGreen);
-		font-family: 'Poppins', sans-serif;
+		font-family: 'HaveHeartOne', sans-serif;
 	}
 `
 
@@ -177,7 +187,7 @@ const LogoBackground = styled.div`
 	align-items: center;
 	width: 3.5rem;
 	height: 3.5rem;
-	margin-right: var(--xs);
+	margin-right: var(--md);
 	position: relative;
 	img {
 		position: absolute;

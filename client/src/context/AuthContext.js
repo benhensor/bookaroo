@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import axios from 'axios';
 
@@ -9,10 +9,10 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    console.log('User state:', user);
-    console.log('Is authenticated:', isAuthenticated);
-  }, [user, isAuthenticated]);  
+  // useEffect(() => {
+  //   console.log('User state:', user);
+  //   console.log('Is authenticated:', isAuthenticated);
+  // }, [user, isAuthenticated]);  
 
   const { isLoading } = useQuery(
     'currentUser',

@@ -1,9 +1,7 @@
 import { DataTypes } from 'sequelize'
 import sequelize from '../config/database.mjs'
 
-const User = sequelize.define(
-	'User',
-	{
+const User = sequelize.define('User', {
 		id: {
 			type: DataTypes.BIGINT,
 			primaryKey: true,

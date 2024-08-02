@@ -3,9 +3,14 @@ import sequelize from '../config/database.mjs'
 import User from './User.mjs'
 
 const Book = sequelize.define('Book', {
+	id: {
+		type: DataTypes.BIGINT,
+		primaryKey: true,
+		autoIncrement: true,
+		allowNull: false,
+  },
 	isbn: {
 		type: DataTypes.STRING(13),
-		primaryKey: true,
 		allowNull: false,
 	},
 	coverImg: {
@@ -31,7 +36,7 @@ const Book = sequelize.define('Book', {
 		allowNull: true,
 	},
 	category: {
-		type: DataTypes.STRING(200),
+		type: DataTypes.ARRAY(DataTypes.STRING),
 		allowNull: true,
 	},
 	condition: {
@@ -52,6 +57,7 @@ const Book = sequelize.define('Book', {
 		},
 	},
 }, {
+	tableName: 'books',
 	timestamps: false,
 })
 

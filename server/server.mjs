@@ -5,6 +5,8 @@ import sequelize from './config/database.mjs'
 import authRoutes from './routes/authRoutes.mjs'
 import bookRoutes from './routes/bookRoutes.mjs'
 import userRoutes from './routes/userRoutes.mjs'
+import userBooksRoutes from './routes/userBooksRoutes.mjs'
+import './models/association.mjs'
 
 dotenv.config()
 
@@ -19,8 +21,9 @@ app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/books', bookRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/userbooks', userBooksRoutes)
 
-sequelize.sync().then(() => {
+sequelize.sync({ alter: true }).then(() => {
 	app.listen(process.env.PORT, () => {
 		console.log(`Server running on port ${process.env.PORT}`)
 	})

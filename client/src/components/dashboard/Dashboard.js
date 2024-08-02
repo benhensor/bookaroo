@@ -1,12 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useUser } from '../../context/UserContext'
 import styled from 'styled-components'
 import Genre from './Genre'
+import Carousel from '../carousel/Carousel'
 import WordButton from '../buttons/WordButton'
 import Arrow from '../../icons/Arrow'
 
 export default function Dashboard() {
 	const { user, isLoading, updateUserPreferences } = useAuth() // Use loading from AuthContext
+	const {
+    userListings,
+    recommendations,
+    userListingsLoading,
+    userListingsError,
+    recommendationsLoading,
+    recommendationsError,
+  } = useUser();
 	const [dropdownOpen, setDropdownOpen] = useState(false)
 	const [selectedPreferences, setSelectedPreferences] = useState([])
 	const [isClicked, setIsClicked] = useState(false)
@@ -23,10 +33,13 @@ export default function Dashboard() {
 		'Horror',
 		'Fiction',
 		'Non-Fiction',
+		'Biography & Autobiography',
+		'History',
+		'Politics'
 	]
 
 	useEffect(() => {
-		console.log('User:', user) // Debugging log
+		// console.log('User:', user) // Debugging log
 		if (user && user.preferences) {
 			setSelectedPreferences(user.preferences)
 		} else {
@@ -45,7 +58,7 @@ export default function Dashboard() {
 	}
 
 	const handleSavePreferences = useCallback(() => {
-		console.log('handleSavePreferences called') // Debugging log
+		// console.log('handleSavePreferences called') // Debugging log
 
 		if (!user) {
 			console.log('No user found') // Debugging log
@@ -54,7 +67,7 @@ export default function Dashboard() {
 			return
 		}
 
-		console.log('User:', user) // Debugging log
+		// console.log('User:', user) // Debugging log
 		const currentPreferences = user.preferences || [] // Treat undefined preferences as an empty array
 
 		console.log('Current preferences:', currentPreferences) // Debugging log
@@ -65,7 +78,7 @@ export default function Dashboard() {
 			JSON.stringify(currentPreferences)
 
 		if (!preferencesChanged) {
-			console.log('Preferences have not changed') // Debugging log
+			// console.log('Preferences have not changed') // Debugging log
 			setDropdownOpen(false)
 			setIsClicked(false)
 			return
@@ -73,7 +86,7 @@ export default function Dashboard() {
 
 		updateUserPreferences(selectedPreferences)
 			.then(() => {
-				console.log('Preferences saved successfully') // Debugging log
+				// console.log('Preferences saved successfully') // Debugging log
 				setDropdownOpen(false)
 				setIsClicked(false)
 			})
@@ -86,6 +99,23 @@ export default function Dashboard() {
 		setDropdownOpen((prevState) => !prevState)
 		setIsClicked((prevState) => !prevState)
 	}
+	
+	const renderCarousel = (items, title, isLoading, isError) => {
+		if (isLoading) {
+			return <CarouselContainer>Loading...</CarouselContainer>
+		}
+
+		if (isError) {
+			return <CarouselContainer>Error loading data</CarouselContainer>
+		}
+
+		return (
+			<CarouselContainer>
+				<Carousel items={items} title={title} />
+			</CarouselContainer>
+		)
+	}
+	
 
 	if (isLoading) {
 		return (
@@ -101,6 +131,7 @@ export default function Dashboard() {
 				<div>No user data available</div>
 			</section>
 		)
+
 
 	return (
 		<section>
@@ -149,15 +180,18 @@ export default function Dashboard() {
 							<WordButton to="/browse" text="search" />
 							&nbsp;for available books.
 						</p>
+
+						<p>
+							See anything you&nbsp;
+							<WordButton text="like" />
+							?
+						</p>
+
 					</Controls>
 				</Details>
 			</Container>
-			<div>
-				<h2>Your Listings</h2>
-			</div>
-			<div>
-				<h2>Recommended for You</h2>
-			</div>
+				{renderCarousel(userListings, "Your Listings", userListingsLoading, userListingsError)}
+				{renderCarousel(recommendations, "Recommended for You", recommendationsLoading, recommendationsError)}
 		</section>
 	)
 }
@@ -240,4 +274,8 @@ const Dropdown = styled.div`
 		border: 1px solid #ccc;
 		border-radius: var(--xs);
 	}
+`
+
+const CarouselContainer = styled.div`
+
 `
