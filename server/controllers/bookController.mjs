@@ -1,5 +1,6 @@
 import sequelize from '../config/database.mjs'
-import Book from '../models/book.mjs'
+import User from '../models/User.mjs'
+import Book from '../models/Book.mjs'
 import { Op } from 'sequelize'
 
 const listBook = async (req, res) => {
@@ -76,7 +77,24 @@ const getRecommendations = async (req, res) => {
 
 const getAllBooks = async (req, res) => {
 	try {
-		const books = await Book.findAll()
+		const books = await Book.findAll({
+			include: {
+				model: User,
+				as: 'Users',
+				attributes: [
+					'id',
+					'username',
+					'email',
+					'phone',
+					'addressLine1',
+					'addressLine2',
+					'city',
+					'postcode',
+					'latitude',
+					'longitude',
+				],
+			},
+		})
 		res.status(200).json(books)
 	} catch (error) {
 		console.error('Error fetching all books:', error)
@@ -85,28 +103,34 @@ const getAllBooks = async (req, res) => {
 }
 
 const searchBooks = async (req, res) => {
-    const { query } = req.query;
+	const { query } = req.query
 
-    if (!query) {
-        return res.status(400).json({ error: 'Query parameter is required' });
-    }
+	if (!query) {
+		return res.status(400).json({ error: 'Query parameter is required' })
+	}
 
-    try {
-        const books = await Book.findAll({
-            where: {
-                [Op.or]: [
-                    { title: { [Op.iLike]: `%${query}%` } },  // Search by title
-                    { author: { [Op.iLike]: `%${query}%` } }, // Search by author
-                    { category: { [Op.contains]: [query] } }, // Search by category (if category is an array)
-                ]
-            }
-        });
+	try {
+		const books = await Book.findAll({
+			where: {
+				[Op.or]: [
+					{ title: { [Op.iLike]: `%${query}%` } }, // Search by title
+					{ author: { [Op.iLike]: `%${query}%` } }, // Search by author
+					{ category: { [Op.contains]: [query] } }, // Search by category (if category is an array)
+				],
+			},
+		})
 
-        res.json(books);
-    } catch (error) {
-        console.error('Error searching books:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
+		res.json(books)
+	} catch (error) {
+		console.error('Error searching books:', error)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+}
 
-export { listBook, getListedBooks, getRecommendations, getAllBooks, searchBooks }
+export {
+	listBook,
+	getListedBooks,
+	getRecommendations,
+	getAllBooks,
+	searchBooks,
+}

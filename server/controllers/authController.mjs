@@ -7,27 +7,36 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const register = async (req, res) => {
-	const { username, email, password, phone, addressLine1, addressLine2, city, postcode } = req.body
+	const {
+		username,
+		email,
+		password,
+		phone,
+		addressLine1,
+		addressLine2,
+		city,
+		postcode,
+	} = req.body
 	const hashedPassword = await bcrypt.hash(password, 10)
 
 	try {
-    const response = await axios.get(
-      `https://api.geocodify.com/v2/geocode?api_key=${process.env.GEOCODIFY_API_KEY}&q=${addressLine1} ${addressLine2} ${city} ${postcode}`
-    )
-  
-    const location = response.data.response.features[0].geometry.coordinates
+		const response = await axios.get(
+			`https://api.geocodify.com/v2/geocode?api_key=${process.env.GEOCODIFY_API_KEY}&q=${addressLine1} ${addressLine2} ${city} ${postcode}`
+		)
+
+		const location = response.data.response.features[0].geometry.coordinates
 
 		await User.create({
 			username,
 			email,
 			password: hashedPassword,
-      phone,
+			phone,
 			addressLine1,
-      addressLine2,
-      city,
-      postcode,
-      latitude: location[0],
-      longitude: location[1],
+			addressLine2,
+			city,
+			postcode,
+			latitude: location[1],
+			longitude: location[0],
 		})
 		res.status(201).json({ message: 'User registered successfully' })
 	} catch (error) {
@@ -51,7 +60,7 @@ const login = async (req, res) => {
 		res.json({ token })
 	} catch (error) {
 		res.status(500).json({ error: error.message })
-	} 
+	}
 }
 
 export { register, login }

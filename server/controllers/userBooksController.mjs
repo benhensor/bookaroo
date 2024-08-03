@@ -1,5 +1,5 @@
 import User from '../models/User.mjs'
-import Book from '../models/book.mjs'
+import Book from '../models/Book.mjs'
 
 export const likeBook = async (req, res) => {
   try {

@@ -12,10 +12,14 @@ const GlobalStyles = createGlobalStyle`
     --accentLtGreen: #4fffb0;
     --bgGreenA: #9ecda6;
     --bgGreenB: #98b5ab;
-    --dkGreen: #049660;
-    --blkGreen: #02272A;
-    --greyGreen: #bcc8b8;
     --ltGreen: #d8e8d4;
+    --greyGreen: #bcc8b8;
+    --dkGreen: #049660;
+    --dkGreenA: #0d3b3d;
+    --blkGreen: #02272A;
+    --ltBrown: #9E866B;
+    --dkBrown: #5E493D;
+
     --white: #fff;
     --black: #000;
     --danger: #ff4d4d;
@@ -24,6 +28,7 @@ const GlobalStyles = createGlobalStyle`
     // Fonts
 
     // Spacing
+    --xxs: .2rem;
     --xs: .4rem;
     --sm: .8rem;
     --md: 1.6rem;
@@ -34,6 +39,7 @@ const GlobalStyles = createGlobalStyle`
     --fast: all .12s ease;
     --medium: all .24s ease;
     --slow: all .36s ease;
+    --carousel: all .6s ease;
   }
 
   *, *::before, *::after {

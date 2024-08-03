@@ -1,11 +1,10 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { useAuth } from './AuthContext'
 
 const BooksContext = createContext()
 
 export const BooksProvider = ({ children }) => {
-	const { user } = useAuth()
+
 	const [books, setBooks] = useState([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState(null)

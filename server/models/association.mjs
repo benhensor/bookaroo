@@ -1,8 +1,8 @@
-import User from './User.mjs';
-import Book from './book.mjs';
-import UserBooks from './UserBooks.mjs';
+import User from './User.mjs'
+import Book from './Book.mjs'
+import UserBooks from './UserBooks.mjs'
 
-User.belongsToMany(Book, { through: UserBooks, foreignKey: 'user_id' });
-Book.belongsToMany(User, { through: UserBooks, foreignKey: 'book_id' });
+User.belongsToMany(Book, { through: UserBooks, foreignKey: 'user_id' })
+Book.belongsToMany(User, { through: UserBooks, foreignKey: 'book_id' })
 
-export default { User, Book, UserBooks };
+export default { User, Book, UserBooks }
