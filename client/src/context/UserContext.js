@@ -45,19 +45,23 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // Fetch liked books based on the IDs in the user's `likedBooks` array
   const fetchLikedBooks = async () => {
-    if (!user) {
-      // console.log('No user, returning empty array');
+    if (!user || !user.likedBooks || user.likedBooks.length === 0) {
       return [];
     }
     const token = sessionStorage.getItem('authToken');
-    // console.log('Fetching liked books for user:', user.id);  // Add this line
-    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/userbooks/liked`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { userId: user.id },
-    });
-    // console.log('Fetched liked books:', response.data);  // Add this line
-    return response.data;
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/books`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { ids: user.likedBooks.join(',') }, // Assuming API accepts a comma-separated list of book IDs
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching liked books:', error);
+      return [];
+    }
   };
 
   const { data: likedBooks, isLoading: likedBooksLoading, isError: likedBooksError, refetch: refetchLikedBooks } = useQuery(
@@ -66,52 +70,51 @@ export const UserProvider = ({ children }) => {
     {
       enabled: !!user, // Ensures the query only runs if a user is logged in
       onSuccess: (data) => {
-        // console.log('Successfully fetched liked books:', data);  // Log success
+        // console.log('Liked books:', data);
       },
       onError: (error) => {
-        // console.error('Error fetching liked books:', error);  // Log any errors
-      },
+        console.error('Error fetching liked books:', error);
+      }
     }
   );
-  
 
+  // Mutation to like a book (add to likedBooks array)
   const likeMutation = useMutation(
-    async ({ userId, bookId }) => {
+    async (bookId) => {
       const token = sessionStorage.getItem('authToken');
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/userbooks/like`, 
-        { userId, bookId },
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/users/like`, 
+        { bookId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['likedBooks', user?.id]);
+        // console.log('Book liked successfully', likedBooks);
+        queryClient.invalidateQueries(['likedBooks', user?.id]); // Refetch liked books after a successful like
+        queryClient.invalidateQueries('currentUser'); // Refetch user data to update likedBooks array
       },
     }
   );
-
+  
   const unlikeMutation = useMutation(
-    async ({ userId, bookId }) => {
+    async (bookId) => {
       const token = sessionStorage.getItem('authToken');
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/userbooks/unlike`, 
-        { userId, bookId },
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/users/unlike`, 
+        { bookId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     },
     {
-      onSuccess: (data, variables) => {
-        const { bookId } = variables;
-
-        // Directly update the likedBooks query data by filtering out the unliked book
-        queryClient.setQueryData(['likedBooks', user?.id], (oldData) => 
-          oldData ? oldData.filter((book) => book.id !== bookId) : []
-        );
+      onSuccess: () => {
+        // console.log('Book unliked successfully', likedBooks);
+        queryClient.invalidateQueries(['likedBooks', user?.id]); // Refetch liked books after a successful unlike
+        queryClient.invalidateQueries('currentUser'); // Refetch user data to update likedBooks array
       },
     }
   );
 
-  const likeBook = (userId, bookId) => likeMutation.mutate({ userId, bookId });
-  const unlikeBook = (userId, bookId) => unlikeMutation.mutate({ userId, bookId });
+  const likeBook = (bookId) => likeMutation.mutate(bookId);
+  const unlikeBook = (bookId) => unlikeMutation.mutate(bookId);
 
   useEffect(() => {
     if (user) {

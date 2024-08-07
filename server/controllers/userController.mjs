@@ -1,4 +1,6 @@
 import User from '../models/User.mjs'
+import Book from '../models/Book.mjs'
+import { Op } from 'sequelize'
 import axios from 'axios'
 
 const getUserDetails = async (req, res) => {
@@ -23,6 +25,9 @@ const getUserDetails = async (req, res) => {
 	}
 }
 
+
+
+
 const searchUsers = async (req, res) => {
 	const { userId } = req.query
 	try {
@@ -30,7 +35,18 @@ const searchUsers = async (req, res) => {
 			where: {
 				id: userId,
 			},
-			attributes: { exclude: ['password'] },
+			attributes: [
+				'id',
+				'username',
+				'email',
+				'phone',
+				'addressLine1',
+				'addressLine2',
+				'city',
+				'postcode',
+				'latitude',
+				'longitude',
+			]
 		})
 		res.json(users)
 	} catch (error) {
@@ -38,6 +54,9 @@ const searchUsers = async (req, res) => {
 		res.status(500).json({ error: 'Internal server error' })
 	}
 }
+
+
+
 
 const updateUserDetails = async (req, res) => {
 	const {
@@ -97,6 +116,111 @@ const updateUserDetails = async (req, res) => {
 	}
 }
 
+
+
+
+const likeBook = async (req, res) => {
+  try {
+    const { bookId } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId);
+
+    if (!user.likedBooks) {
+      user.likedBooks = [];
+    }
+
+    if (user.likedBooks.includes(bookId)) {
+      return res.status(400).json({ message: 'Book is already liked' });
+    }
+
+    user.likedBooks = [...user.likedBooks, bookId];
+    await user.save();
+
+    res.status(200).json({ message: 'Book liked successfully', likedBooks: user.likedBooks });
+  } catch (error) {
+    console.error('Error liking book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
+
+const unlikeBook = async (req, res) => {
+  try {
+    const { bookId } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId);
+
+    if (!user.likedBooks) {
+      return res.status(400).json({ message: 'No liked books found' });
+    }
+
+    if (!user.likedBooks.includes(bookId)) {
+      return res.status(400).json({ message: 'Book is not liked' });
+    }
+
+    user.likedBooks = user.likedBooks.filter(id => id !== bookId);
+    await user.save();
+
+    res.status(200).json({ message: 'Book unliked successfully', likedBooks: user.likedBooks });
+  } catch (error) {
+    console.error('Error unliking book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
+const getLikedBooks = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId);
+
+    if (!user || !user.likedBooks || user.likedBooks.length === 0) {
+      return res.status(404).json({ message: 'User or liked books not found' });
+    }
+
+    const books = await Book.findAll({
+      where: {
+        id: {
+          [Op.in]: user.likedBooks,
+        },
+      },
+      include: {
+        model: User,
+        as: 'user', // This should match the association alias in your models
+        attributes: [
+          'id',
+          'username',
+          'email',
+          'phone',
+          'addressLine1',
+          'addressLine2',
+          'city',
+          'postcode',
+          'latitude',
+          'longitude',
+        ],
+      },
+    });
+
+    res.status(200).json(books);
+  } catch (error) {
+    console.error('Error fetching liked books:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
+
 const updatePreferences = async (req, res) => {
 	const { preferences } = req.body
 	const userId = req.user.id
@@ -121,4 +245,6 @@ const updatePreferences = async (req, res) => {
 	}
 }
 
-export { getUserDetails, updateUserDetails, updatePreferences, searchUsers }
+
+
+export { getUserDetails, searchUsers, updateUserDetails, likeBook, unlikeBook, getLikedBooks, updatePreferences }

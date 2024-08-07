@@ -54,6 +54,12 @@ const User = sequelize.define('User', {
 			type: DataTypes.ARRAY(DataTypes.STRING),
 			allowNull: true,
 		},
+		likedBooks: {
+			type: DataTypes.ARRAY(DataTypes.BIGINT),
+			allowNull: true,
+			field: 'liked_books',
+			defaultValue: [],
+		},
 	},
 	{
 		tableName: 'users',

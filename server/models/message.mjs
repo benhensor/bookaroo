@@ -34,9 +34,17 @@ const Message = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    isRead: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "is_read",
+    },
   },
   {
     tableName: "messages",
     timestamps: false,
   }
 );
+
+export default Message;

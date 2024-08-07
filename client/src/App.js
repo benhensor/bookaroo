@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { AuthProvider } from './context/AuthContext'
 import { UserProvider } from './context/UserContext'
 import { BooksProvider } from './context/BooksContext'
+import { MessagesProvider } from './context/MessagesContext'
 import Header from './components/header/Header'
 import Home from './pages/Home'
 import Listing from './pages/Listing'
@@ -27,39 +28,43 @@ function App() {
 			<AuthProvider>
 					<BooksProvider>
 						<UserProvider>
-							<Router>
-								<Header />
-								<main>
-									<Routes>
-										<Route path="/register" element={<Register />} />
-										<Route path="/login" element={<Login />} />
-										<Route path="/dashboard" element={
-											<ProtectedRoute>
-												<Dashboard />
-											</ProtectedRoute>
-										} />
-										<Route path="/list" element={
-											<ProtectedRoute>
-												<Listing />
-											</ProtectedRoute>
-										} />
-										<Route path="/contact" element={
-											<ProtectedRoute>
-												<Contact />
-											</ProtectedRoute>
-										} />
-										<Route path="/browse" element={
-											<ProtectedRoute>
-												<Browse />
-											</ProtectedRoute>
-										} />
-										<Route path="/book" element={
-												<Book />
-										} />
-										<Route path="*" element={<Home />}/>
-									</Routes>
-								</main>
-							</Router>
+							<MessagesProvider>
+								<Router>
+									<Header />
+									<main>
+										<Routes>
+											<Route path="/register" element={<Register />} />
+											<Route path="/login" element={<Login />} />
+											<Route path="/dashboard" element={
+												<ProtectedRoute>
+													<Dashboard />
+												</ProtectedRoute>
+											} />
+											<Route path="/list" element={
+												<ProtectedRoute>
+													<Listing />
+												</ProtectedRoute>
+											} />
+											<Route path="/contact" element={
+												<ProtectedRoute>
+													<Contact />
+												</ProtectedRoute>
+											} />
+											<Route path="/browse" element={
+												<ProtectedRoute>
+													<Browse />
+												</ProtectedRoute>
+											} />
+											<Route path="/book" element={
+												<ProtectedRoute>
+													<Book />
+												</ProtectedRoute>
+											} />
+											<Route path="*" element={<Home />}/>
+										</Routes>
+									</main>
+								</Router>
+							</MessagesProvider>
 						</UserProvider>
 					</BooksProvider>
 			</AuthProvider>

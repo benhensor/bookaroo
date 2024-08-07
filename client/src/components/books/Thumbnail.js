@@ -9,17 +9,39 @@ import ActionButton from '../buttons/ActionButton'
 
 export default function Thumbnail({ book }) {
 	const navigate = useNavigate()
-	const { user } = useAuth()
+	const { user, searchUsers } = useAuth()
 	const { deleteListing } = useUser()
 	const [isHovered, setIsHovered] = useState(false)
 	const [bookOwner, setBookOwner] = useState(null)
 	const [distance, setDistance] = useState(null)
 
+
 	useEffect(() => {
-		if (user && book && Array.isArray(book.user) && book.user.length > 0) {
-			setBookOwner(book.user[0]) // Safely set bookOwner
+		const bookOwnerId = book.userId;
+		const getOwnerOfBook = async () => {
+			try {
+				const ownerData = await searchUsers(bookOwnerId);
+				if (ownerData) {
+					// console.log('response', ownerData[0]);
+					setBookOwner(ownerData[0]);
+				} else {
+					console.log('No owner data found');
+				}
+			} catch (error) {
+				console.error('Error getting book owner:', error);
+			}
+		};
+		if (bookOwnerId) {
+			getOwnerOfBook();
 		}
-	}, [user, book])
+	}, [book.userId, searchUsers]);
+	
+
+	// useEffect(() => {
+	// 	if (user && book && Array.isArray(book.user) && book.user.length > 0) {
+	// 		setBookOwner(book.user[0]) // Safely set bookOwner
+	// 	}
+	// }, [user, book])
 
 	useEffect(() => {
 		if (bookOwner) {
@@ -32,8 +54,8 @@ export default function Thumbnail({ book }) {
 	}, [bookOwner, user])
 
 	// useEffect(() => {
-	// 	console.log('book', book, bookOwner)
-	// }, [book, bookOwner])
+	// 	console.log('distance', book, bookOwner, distance)
+	// }, [book, bookOwner, distance])
 
 	const handleClick = (e) => {
 		e.stopPropagation()
@@ -83,7 +105,7 @@ export default function Thumbnail({ book }) {
 				<BookDetails id="book-details">
 					<h3>{book.title}</h3>
 					<p>{book.author}</p>
-					{user.id !== book.userId && <p>{distance} miles away</p>}
+					{user.id !== book.userId && <p><span>{distance}</span>&nbsp;miles away</p>}
 				</BookDetails>
 			</BookContainer>
 		</>
@@ -168,5 +190,8 @@ const BookDetails = styled.div`
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
+	}
+	span {
+		color: var(--dkGreen);	
 	}
 `

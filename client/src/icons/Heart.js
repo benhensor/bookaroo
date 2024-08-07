@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { useUser } from '../context/UserContext'
-import { useAuth } from '../context/AuthContext'  // Assuming you have an AuthContext for the current user
 
 export default function Heart({ bookId, onClick }) {
   const { likedBooks, likeBook, unlikeBook, likedBooksLoading } = useUser()
-  const { user } = useAuth()  // Get the current user
   const [isLiked, setIsLiked] = useState(false)
 
-  // console.log('likedBooks:', likedBooks)
 
   useEffect(() => {
     if (likedBooks && likedBooks.length > 0) {
-      setIsLiked(likedBooks.some(book => book.id === bookId));
+      // console.log('likedBooks:', likedBooks);
+  
+      // Extract the IDs from the likedBooks array
+      const likedBookIds = likedBooks.map(book => book.id);
+  
+      // Check if the bookId is included in the likedBookIds array
+      setIsLiked(likedBookIds.includes(bookId));
     }
   }, [likedBooks, bookId]);
 
@@ -20,10 +23,10 @@ export default function Heart({ bookId, onClick }) {
     e.stopPropagation();  // Prevent the click event from bubbling up to the parent element
     try {
       if (isLiked) {
-        await unlikeBook(user.id, bookId);
+        await unlikeBook(bookId);
         setIsLiked(false);
       } else {
-        await likeBook(user.id, bookId);
+        await likeBook(bookId);
         setIsLiked(true);
       }
       if (onClick) onClick(e) // Call the onClick function passed as a prop

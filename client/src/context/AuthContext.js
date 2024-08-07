@@ -106,14 +106,20 @@ export const AuthProvider = ({ children }) => {
 
   const searchUsers = async (userId) => {
     const token = sessionStorage.getItem('authToken');
-    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/search`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: { userId },
-    });
-    return response.data;
-  }
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/search`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { userId },
+      });
+      return response.data; // Ensure the data is being returned
+    } catch (error) {
+      console.error('Error searching for users:', error);
+      return null; // Return null or handle the error gracefully
+    }
+  };
+  
 
 
   const contextValue = useMemo(

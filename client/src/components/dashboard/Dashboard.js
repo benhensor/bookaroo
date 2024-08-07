@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useBooks } from '../../context/BooksContext'
 import { useUser } from '../../context/UserContext'
+import { useMessages } from '../../context/MessagesContext'
 import styled from 'styled-components'
 import { categories } from '../../utils/categories'
 import Genre from './Genre'
@@ -11,10 +12,10 @@ import ActionButton from '../buttons/ActionButton'
 import Arrow from '../../icons/Arrow'
 
 export default function Dashboard() {
-	const { user, isLoading, updateUserPreferences, updateUserDetails } =
-		useAuth()
+	const { user, isLoading, updateUserPreferences, updateUserDetails } = useAuth()
 	const { userBooks, recommendations, loading } = useBooks()
 	const { likedBooks, likedBooksLoading } = useUser()
+	const { messages, isMessagesLoading, isError, deleteMessage, markAsRead, sendReply } = useMessages()
 	const [activeDropdown, setActiveDropdown] = useState(false)
 	const [selectedPreferences, setSelectedPreferences] = useState([])
 	const userDetailsRef = useRef(null)
@@ -48,9 +49,9 @@ export default function Dashboard() {
 		}
 	}, [user])
 
-	// useEffect(() => {
-	// 	console.log('Active dropdown changed:', activeDropdown)
-	// }, [activeDropdown])
+	useEffect(() => {
+		console.log('Liked books:', likedBooks) // Debugging log
+	}, [likedBooks])
 
 	useEffect(() => {
 		const handleClickOutside = (e) => {
@@ -225,10 +226,14 @@ export default function Dashboard() {
 						<Dropdown
 							ref={userDetailsRef}
 							$isClicked={activeDropdown === 'userDetails'}
+							$position="absolute"
 							$top="100%"
 							$left="0"
 							$transform="none"
 							$width="fit-content"
+							$padding="var(--sm)"
+							$boxShadow="0 0 1rem rgba(0, 0, 0, 0.2)"
+							$border="1px solid var(--ltGreen)"
 						>
 							<Header>
 								<h3>Update your details...</h3>
@@ -326,10 +331,14 @@ export default function Dashboard() {
 							<Dropdown
 								ref={preferencesRef}
 								$isClicked={activeDropdown === 'preferences'}
+								$position="absolute"
 								$top="40%"
 								$left="0"
 								$transform="none"
 								$width="fit-content"
+								$padding="var(--sm)"
+								$boxShadow="0 0 1rem rgba(0, 0, 0, 0.2)"
+								$border="1px solid var(--ltGreen)"
 							>
 								<Header>
 									<h3>Preferences</h3>
@@ -377,25 +386,34 @@ export default function Dashboard() {
 								?
 							</p>
 							<Arrow isClicked={activeDropdown === 'liked'} />
-							<Dropdown
-								ref={likedRef}
-								$isClicked={activeDropdown === 'liked'}
-								$top="40%"
-								$left="50%"
-								$transform="translateX(-50%)"
-								$width="100%"
-							>
-								{renderCarousel(
-									likedBooks,
-									'Liked Books',
-									likedBooksLoading
-								)}
-							</Dropdown>
 						</Sentence>
 					</Controls>
 				</Details>
+
+				<MessagingContainer>
+					<h2>Messaging Centre</h2>
+				</MessagingContainer>
+
 			</Container>
 
+			<Dropdown
+				ref={likedRef}
+				$isClicked={activeDropdown === 'liked'}
+				$position="normal"
+				$top="0"
+				$left="0"
+				$transform="none"
+				$width="100%"
+				$padding="0"
+				$boxShadow="none"
+				$border="none"
+			>
+				{renderCarousel(
+					likedBooks,
+					'Liked Books',
+					likedBooksLoading
+				)}
+			</Dropdown>
 			{renderCarousel(userBooks, 'Your Listings', loading)}
 			{renderCarousel(recommendations, 'Recommended for You', loading)}
 		</section>
@@ -405,11 +423,12 @@ export default function Dashboard() {
 const Container = styled.div`
 	width: 100%;
 	display: flex;
-	flex-direction: column;
+	justify-content: space-between;
 	margin-bottom: var(--lg);
 `
 
 const Details = styled.div`
+	flex: 1;
 	width: 100%;
 	display: flex;
 	flex-direction: column;
@@ -425,6 +444,11 @@ const Details = styled.div`
 		color: var(--dkGreen);
 		font-weight: bold;
 	}
+`
+
+const MessagingContainer = styled.div`
+	flex: 2;
+	outline: 1px solid red;
 `
 
 const Controls = styled.div`
@@ -458,7 +482,7 @@ const Header = styled.div`
 `
 
 const Dropdown = styled.div`
-	position: absolute;
+	position: ${({ $position }) => $position};
 	top: ${({ $top }) => $top};
 	left: ${({ $left }) => $left};
 	transform: ${({ $transform }) => $transform};
@@ -470,15 +494,15 @@ const Dropdown = styled.div`
 			? 'auto'
 			: '0'}; /* Set a reasonable max-height for the open state */
 	opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
-	padding: var(--sm);
-	box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+	padding: ${({ $padding }) => $padding};
+	box-shadow: ${({ $boxShadow }) => $boxShadow};
 	display: flex;
 	flex-direction: column;
 	margin-top: var(--lg);
-	border: 1px solid var(--ltGreen);
+	border: ${({ $border }) => $border};
 	border-radius: var(--xs);
 	background: #fff;
-	transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+	transition: all 2s ease, opacity 0.3s ease, padding 0.3s ease;
 	@media only screen and (max-width: 450px) {
 		width: 100%;
 		border-radius: 0;

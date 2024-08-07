@@ -1,10 +1,25 @@
 import sequelize from '../config/database.mjs'
 import User from './User.mjs'
 import Book from './Book.mjs'
+import Message from './Message.mjs'
 
-User.hasMany(Book, { foreignKey: 'userId' })
-Book.belongsTo(User, { foreignKey: 'userId' })
+// User to book relationship
+User.hasMany(Book, { as: 'books', foreignKey: 'userId' })
+Book.belongsTo(User, { as: 'user', foreignKey: 'userId' })
 
-const db = { User, Book, sequelize }
+// User (sender) to message relationship
+User.hasMany(Message, { as: 'sentMessages', foreignKey: 'senderId' })
+Message.belongsTo(User, { as: 'sender', foreignKey: 'senderId' })
+
+// User (receiver) to message relationship
+User.hasMany(Message, { as: 'receivedMessages', foreignKey: 'receiverId' })
+Message.belongsTo(User, { as: 'receiver', foreignKey: 'receiverId' })
+
+// Book to message relationship
+Book.hasMany(Message, { as: 'messages', foreignKey: 'bookId' })
+Message.belongsTo(Book, { as: 'book', foreignKey: 'bookId' })
+
+
+const db = { User, Book, Message, sequelize }
 
 export default db

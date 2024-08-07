@@ -37,6 +37,10 @@ const listBook = async (req, res) => {
 	}
 }
 
+
+
+
+
 const deleteListing = async (req, res) => {
 	const { bookId } = req.params
 	try {
@@ -50,6 +54,10 @@ const deleteListing = async (req, res) => {
 		res.status(500).json({ error: error.message })
 	}
 }
+
+
+
+
 
 const getListedBooks = async (req, res) => {
 	try {
@@ -79,6 +87,9 @@ const getListedBooks = async (req, res) => {
 		res.status(500).json({ error: error.message })
 	}
 }
+
+
+
 
 const getRecommendations = async (req, res) => {
 	const { userId, preferences } = req.query
@@ -125,41 +136,49 @@ const getRecommendations = async (req, res) => {
 	}
 }
 
+
+
+
 const getAllBooks = async (req, res) => {
-	try {
-		const books = await Book.findAll({
-			include: {
-				model: User,
-				as: 'user',
-				attributes: [
-					'id',
-					'username',
-					'email',
-					'phone',
-					'addressLine1',
-					'addressLine2',
-					'city',
-					'postcode',
-					'latitude',
-					'longitude',
-				],
-			},
-			raw: true,
-			nest: true,
-		})
+  try {
+    const { ids } = req.query; // Get the `ids` query parameter
 
-		// Log the first book and its associated user for debugging
-		// if (books.length > 0) {
-		//   console.log('First book:', books[56]);
-		//   console.log('Associated user:', books[56].user);
-		// }
+    // If `ids` is provided, filter by those book IDs
+    const whereClause = ids
+      ? { id: { [Op.in]: ids.split(',').map(id => parseInt(id, 10)) } }
+      : {}; // If `ids` is not provided, fetch all books
 
-		res.status(200).json(books)
-	} catch (error) {
-		console.error('Error fetching all books:', error)
-		res.status(500).json({ error: 'Internal server error' })
-	}
-}
+    const books = await Book.findAll({
+      where: whereClause,
+      include: {
+        model: User,
+        as: 'user',
+        attributes: [
+          'id',
+          'username',
+          'email',
+          'phone',
+          'addressLine1',
+          'addressLine2',
+          'city',
+          'postcode',
+          'latitude',
+          'longitude',
+        ],
+      },
+      raw: true,
+      nest: true,
+    });
+
+    res.status(200).json(books);
+  } catch (error) {
+    console.error('Error fetching all books:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
 
 const searchBooks = async (req, res) => {
 	const { query } = req.query

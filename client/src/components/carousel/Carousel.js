@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import styled from 'styled-components'
+import { useUser } from '../../context/UserContext'
 import { useWindowWidth } from '../../utils/useWindowWidth'
 import Book from '../books/Thumbnail'
 import Chevron from '../../icons/Chevron'
@@ -50,6 +51,11 @@ export default function Carousel({ items, title }) {
   // useEffect(() => {
   //   console.log('message', message)
   // }, [message])
+  useEffect(() => {
+    if (title === 'Liked Books') {
+      console.log('liked carousel', items)
+    }
+  }, [title, items])
 
 
 

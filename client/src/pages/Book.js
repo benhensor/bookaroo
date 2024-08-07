@@ -26,6 +26,9 @@ export default function Book() {
 					`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
 				)
 				// console.log(data)
+        if (!data.items) {
+          return
+        }
 				setBookDescription(data.items[0].volumeInfo.description)
 			} catch (error) {
 				console.error(error)
