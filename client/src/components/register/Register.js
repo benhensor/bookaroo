@@ -4,6 +4,7 @@ import axios from 'axios'
 import styled from 'styled-components'
 import ActionButton from '../buttons/ActionButton'
 import WordButton from '../buttons/WordButton'
+import { Content } from '../../assets/styles/GlobalStyles'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -136,9 +137,9 @@ const Register = () => {
 										required
 									/>
 								</InputGroup>
-								<ActionButton text="Submit" />
+								<ActionButton type="action" text="Submit" />
 							</form>
-				<p>Already have an account? &nbsp;<WordButton to="/login" text="Sign In" /></p>
+				<P>Already have an account? &nbsp;<WordButton to="/login" text="Sign In" /></P>
 							
 			</Content>
     </section>
@@ -147,16 +148,9 @@ const Register = () => {
 
 export default Register
 
-const Content = styled.div`
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	p {
-		margin-top: var(--sm);
-		font-size: 1.4rem;
-	}
+const P = styled.p`
+	margin-top: var(--sm);
+	font-size: 1.4rem;
 `
 
 const InputGroup = styled.div`

@@ -17,7 +17,10 @@ const GlobalStyles = createGlobalStyle`
     --dkGreen: #049660;
     --dkGreenA: #0d3b3d;
     --blkGreen: #02272A;
+    --creamA: #fff3cd;
+    --creamB: #ffeeba;
     --ltBrown: #9E866B;
+    --mdBrown: #856404;
     --dkBrown: #5E493D;
 
     --white: #fff;
@@ -34,6 +37,7 @@ const GlobalStyles = createGlobalStyle`
     --md: 1.6rem;
     --lg: 2.4rem;
     --xl: 3.2rem;
+    --xxl: 4.6rem;
 
     // Transitions
     --fast: all .12s ease;
@@ -79,6 +83,7 @@ const GlobalStyles = createGlobalStyle`
   button {
     border: none;
     border-radius: var(--xs);
+    padding: var(--sm) var(--md);
     cursor: pointer;
     transition: var(--fast);
   }
@@ -87,20 +92,23 @@ const GlobalStyles = createGlobalStyle`
     display: flex;
     flex-direction: column;
     gap: var(--sm);
-    margin: 0 auto;
+    margin: var(--sm) auto;
     width: 40rem;
-    margin-top: var(--lg);
+    overflow-x: hidden;
   }
 
   label {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: var(--sm);
 		font-size: 1.2rem;
 		margin-bottom: var(--xs);
+    overflow: hidden;
 	}
 
   input, select, textarea {
+    width: 100%;
 		padding: var(--sm);
 		font-size: 1.4rem;
 		border: 1px solid #ccc;
@@ -110,6 +118,12 @@ const GlobalStyles = createGlobalStyle`
       border-color: var(--accentGreen);
     }
 	}
+
+  select, option {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   img {
     max-width: 100%;
@@ -136,8 +150,17 @@ export const PageHeader = styled.div`
   display: flex;
 	justify-content: space-between;
 	align-items: center;
-	max-width: 40rem;
 	margin: 0 auto;
+  position: relative;
+`
+
+export const Content = styled.div`
+  width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+  gap: var(--lg);
 `
 
 export default GlobalStyles;

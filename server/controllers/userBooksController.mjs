@@ -39,18 +39,27 @@ export const unlikeBook = async (req, res) => {
 
 export const getLikedBooks = async (req, res) => {
   try {
-    const { userId } = req.query
+    const { userId } = req.query;
+    // console.log('Fetching liked books for user:', userId);
 
     const user = await User.findByPk(userId, {
-      include: Book
-    })
+      include: {
+        model: Book,
+        through: { attributes: [] }, // Exclude join table attributes
+      },
+    });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' })
+      // console.log('User not found');
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    res.status(200).json(user.books)
+    // console.log('Fetched user:', user);
+    // console.log('Liked books:', user.Books);
+
+    res.status(200).json(user.Books);
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error('Error fetching liked books:', error.message);
+    res.status(500).json({ error: error.message });
   }
-}
+};

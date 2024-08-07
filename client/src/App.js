@@ -11,7 +11,9 @@ import { BooksProvider } from './context/BooksContext'
 import Header from './components/header/Header'
 import Home from './pages/Home'
 import Listing from './pages/Listing'
+import Contact from './pages/Contact'
 import Browse from './pages/Browse'
+import Book from './pages/Book'
 import Login from './components/login/Login'
 import Register from './components/register/Register'
 import Dashboard from './components/dashboard/Dashboard'
@@ -23,35 +25,43 @@ function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
-				<UserProvider>
 					<BooksProvider>
-						<Router>
-							<Header />
-							<main>
-								<Routes>
-									<Route path="/register" element={<Register />} />
-									<Route path="/login" element={<Login />} />
-									<Route path="/dashboard" element={
-										<ProtectedRoute>
-											<Dashboard />
-										</ProtectedRoute>
-									} />
-									<Route path="/list" element={
-										<ProtectedRoute>
-											<Listing />
-										</ProtectedRoute>
-									} />
-									<Route path="/browse" element={
-										<ProtectedRoute>
-											<Browse />
-										</ProtectedRoute>
-									} />
-									<Route path="*" element={<Home />}/>
-								</Routes>
-							</main>
-						</Router>
+						<UserProvider>
+							<Router>
+								<Header />
+								<main>
+									<Routes>
+										<Route path="/register" element={<Register />} />
+										<Route path="/login" element={<Login />} />
+										<Route path="/dashboard" element={
+											<ProtectedRoute>
+												<Dashboard />
+											</ProtectedRoute>
+										} />
+										<Route path="/list" element={
+											<ProtectedRoute>
+												<Listing />
+											</ProtectedRoute>
+										} />
+										<Route path="/contact" element={
+											<ProtectedRoute>
+												<Contact />
+											</ProtectedRoute>
+										} />
+										<Route path="/browse" element={
+											<ProtectedRoute>
+												<Browse />
+											</ProtectedRoute>
+										} />
+										<Route path="/book" element={
+												<Book />
+										} />
+										<Route path="*" element={<Home />}/>
+									</Routes>
+								</main>
+							</Router>
+						</UserProvider>
 					</BooksProvider>
-				</UserProvider>
 			</AuthProvider>
 		</QueryClientProvider>
 	)

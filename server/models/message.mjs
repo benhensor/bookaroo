@@ -1,0 +1,42 @@
+import { DataTypes } from "sequelize";
+import sequelize from "../config/database.mjs";
+import User from "./User.mjs";
+import Book from "./Book.mjs";
+
+const Message = sequelize.define(
+  "Message",
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+      allowNull: false,
+    },
+    userId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: "user_id",
+      references: {
+        model: User,
+        key: "id",
+      },
+    },
+    bookId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: "book_id",
+      references: {
+        model: Book,
+        key: "id",
+      },
+    },
+    message: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: "messages",
+    timestamps: false,
+  }
+);

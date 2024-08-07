@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useUser } from '../context/UserContext'
 import styled from 'styled-components'
 import axios from 'axios'
 import ActionButton from '../components/buttons/ActionButton'
@@ -9,6 +10,7 @@ import { PageHeader } from '../assets/styles/GlobalStyles'
 
 export default function Listing() {
 	const { user } = useAuth()
+	const { createListing } = useUser()
 	const [searchTerm, setSearchTerm] = useState('')
 	const [bookResults, setBookResults] = useState([])
 	const [isbn, setIsbn] = useState('')
@@ -153,48 +155,23 @@ export default function Listing() {
 	};
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		const token = sessionStorage.getItem('authToken');
-	
-		// Validate fields before submission
-		const validData = {
-			isbn: bookData.isbn || '',
-			coverImg: bookData.coverImg || '',
-			title: bookData.title || '',
-			author: bookData.author || '',
-			publishedDate: bookData.publishedDate || '',
-			publisher: bookData.publisher || '',
-			category: bookData.category.length > 0 ? bookData.category : ['Unknown'], // Ensure it's always an array
-			condition: bookData.condition || 'Unknown',
-			notes: bookData.notes || '',
-			userId: bookData.userId || user?.id || '',
-		};
-	
-		console.log('Book data:', validData);
-	
-		if (!validData.title) {
-			setError('Please select a book from the list.');
-			return;
-		}
-	
-		if (!validData.condition || validData.condition === 'none') {
-			setError('Please select the book condition.');
-			return;
-		}
-	
-		try {
-			await axios.post(`${process.env.REACT_APP_API_URL}/api/books/list`, validData, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			setMessage('Book listed successfully!');
-			handleReset();
-		} catch (error) {
-			console.error('Error submitting book listing:', error);
-			setError('An error occurred while submitting your listing. Please try again.');
-		}
-	};
+    e.preventDefault();
+
+    // Validate fields before submission
+    if (!bookData.title || !bookData.condition || !bookData.category.length) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    const response = await createListing(bookData);
+
+    if (response.success) {
+      setMessage('Book listed successfully!');
+      handleReset();
+    } else {
+      setError(response.message || 'An error occurred. Please try again.');
+    }
+  };
 
 	return (
 		<section>
@@ -212,7 +189,7 @@ export default function Listing() {
 						placeholder="Search by title, author, or ISBN"
 						onChange={(e) => setSearchTerm(e.target.value)}
 					/>
-					<ActionButton text="Search" />
+					<ActionButton type="action" text="Search" />
 				</label>
 				{error && <ErrorMessage>{error}</ErrorMessage>}
 				{message && <SuccessMessage>{message}</SuccessMessage>}
@@ -286,6 +263,7 @@ export default function Listing() {
 									name="condition"
 									value={bookData.condition}
 									onChange={handleInputChange}
+									required
 								>
 									<option value="none" defaultValue>
 										Select Condition
@@ -302,9 +280,11 @@ export default function Listing() {
 									name="notes"
 									value={bookData.notes}
 									onChange={handleInputChange}
+									placeholder="Any additional information about the book?"
+									required
 								/>
 							</label>
-							<ActionButton text="Submit" type="submit" />
+							<ActionButton type="action" text="Submit" />
 						</>
 					)}
 				</form>
@@ -319,8 +299,13 @@ const ErrorMessage = styled.p`
 	margin-top: 10px;
 `
 
-const SuccessMessage = styled.p`
-	color: green;
-	font-weight: bold;
-	margin-top: 10px;
+const SuccessMessage = styled.div`
+  max-width: 100rem;
+  margin: var(--sm) auto;
+  padding: var(--sm);
+  background-color: var(--creamA);
+  color: var(--mdBrown);
+  border: 1px solid var(--creamB);
+  border-radius: var(--xs);
+  text-align: center;
 `

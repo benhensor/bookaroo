@@ -1,51 +1,129 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useBooks } from '../../context/BooksContext'
 import { useUser } from '../../context/UserContext'
 import styled from 'styled-components'
+import { categories } from '../../utils/categories'
 import Genre from './Genre'
 import Carousel from '../carousel/Carousel'
 import WordButton from '../buttons/WordButton'
+import ActionButton from '../buttons/ActionButton'
 import Arrow from '../../icons/Arrow'
 
 export default function Dashboard() {
-	const { user, isLoading, updateUserPreferences } = useAuth() // Use loading from AuthContext
-	const {
-    userListings,
-    recommendations,
-    userListingsLoading,
-    userListingsError,
-    recommendationsLoading,
-    recommendationsError,
-  } = useUser();
-	const [dropdownOpen, setDropdownOpen] = useState(false)
+	const { user, isLoading, updateUserPreferences, updateUserDetails } =
+		useAuth()
+	const { userBooks, recommendations, loading } = useBooks()
+	const { likedBooks, likedBooksLoading } = useUser()
+	const [activeDropdown, setActiveDropdown] = useState(false)
 	const [selectedPreferences, setSelectedPreferences] = useState([])
-	const [isClicked, setIsClicked] = useState(false)
+	const userDetailsRef = useRef(null)
+	const preferencesRef = useRef(null)
+	const likedRef = useRef(null)
 
-	const categories = [
-		'Mystery',
-		'Comedy',
-		'Romance',
-		'Science Fiction',
-		'Fantasy',
-		'Thriller/Suspense',
-		'Historical Fiction',
-		'Young Adult',
-		'Horror',
-		'Fiction',
-		'Non-Fiction',
-		'Biography & Autobiography',
-		'History',
-		'Politics'
-	]
+	const [formValues, setFormValues] = useState({
+		username: '',
+		email: '',
+		phone: '',
+		addressLine1: '',
+		addressLine2: '',
+		city: '',
+		postcode: '',
+	})
+
+	// console.log('User:', user) // Debugging log
 
 	useEffect(() => {
-		// console.log('User:', user) // Debugging log
-		if (user && user.preferences) {
-			setSelectedPreferences(user.preferences)
-		} else {
-			setSelectedPreferences([])
+		if (user) {
+			setSelectedPreferences(user.preferences || [])
+			setFormValues({
+				username: user.username || '',
+				email: user.email || '',
+				phone: user.phone || '',
+				addressLine1: user.addressLine1 || '',
+				addressLine2: user.addressLine2 || '',
+				city: user.city || '',
+				postcode: user.postcode || '',
+			})
 		}
 	}, [user])
+
+	// useEffect(() => {
+	// 	console.log('Active dropdown changed:', activeDropdown)
+	// }, [activeDropdown])
+
+	useEffect(() => {
+		const handleClickOutside = (e) => {
+			if (
+				userDetailsRef.current &&
+				!userDetailsRef.current.contains(e.target) &&
+				activeDropdown === 'userDetails'
+			) {
+				setActiveDropdown(false)
+			}
+			if (
+				preferencesRef.current &&
+				!preferencesRef.current.contains(e.target) &&
+				activeDropdown === 'preferences'
+			) {
+				setActiveDropdown(false)
+			}
+			if (
+				likedRef.current &&
+				!likedRef.current.contains(e.target) &&
+				activeDropdown === 'liked'
+			) {
+				setActiveDropdown(false)
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+		return () =>
+			document.removeEventListener('mousedown', handleClickOutside)
+	}, [activeDropdown])
+
+	const handleInputChange = (e) => {
+		const { name, value } = e.target
+		setFormValues((prevValues) => ({
+			...prevValues,
+			[name]: value,
+		}))
+	}
+
+	const handleSaveUserDetails = useCallback(() => {
+		if (!user) return
+
+		const {
+			username,
+			email,
+			phone,
+			addressLine1,
+			addressLine2,
+			city,
+			postcode,
+		} = formValues
+
+		if (
+			!username ||
+			!email ||
+			!phone ||
+			!addressLine1 ||
+			!city ||
+			!postcode
+		) {
+			console.log('Missing required fields') // Debugging log
+			setActiveDropdown(null)
+			return
+		}
+
+		updateUserDetails(formValues)
+			.then(() => {
+				setActiveDropdown(false)
+			})
+			.catch((error) => {
+				console.error('Error updating user details:', error)
+			})
+	}, [formValues, updateUserDetails, user])
 
 	const handleGenreSelect = (genre) => {
 		setSelectedPreferences((prevPreferences) => {
@@ -62,16 +140,15 @@ export default function Dashboard() {
 
 		if (!user) {
 			console.log('No user found') // Debugging log
-			setDropdownOpen(false)
-			setIsClicked(false)
+			setActiveDropdown(false)
 			return
 		}
 
 		// console.log('User:', user) // Debugging log
 		const currentPreferences = user.preferences || [] // Treat undefined preferences as an empty array
 
-		console.log('Current preferences:', currentPreferences) // Debugging log
-		console.log('Selected preferences:', selectedPreferences) // Debugging log
+		// console.log('Current preferences:', currentPreferences) // Debugging log
+		// console.log('Selected preferences:', selectedPreferences) // Debugging log
 
 		const preferencesChanged =
 			JSON.stringify(selectedPreferences) !==
@@ -79,34 +156,31 @@ export default function Dashboard() {
 
 		if (!preferencesChanged) {
 			// console.log('Preferences have not changed') // Debugging log
-			setDropdownOpen(false)
-			setIsClicked(false)
+			setActiveDropdown(false)
 			return
 		}
 
 		updateUserPreferences(selectedPreferences)
 			.then(() => {
 				// console.log('Preferences saved successfully') // Debugging log
-				setDropdownOpen(false)
-				setIsClicked(false)
+				setActiveDropdown(false)
 			})
 			.catch((error) => {
 				console.error('Error saving preferences:', error)
 			})
 	}, [selectedPreferences, updateUserPreferences, user])
 
-	const toggleDropdown = () => {
-		setDropdownOpen((prevState) => !prevState)
-		setIsClicked((prevState) => !prevState)
-	}
-	
-	const renderCarousel = (items, title, isLoading, isError) => {
-		if (isLoading) {
-			return <CarouselContainer>Loading...</CarouselContainer>
+	const handleToggleDropdown = (dropdownName) => {
+		if (activeDropdown === dropdownName) {
+			setActiveDropdown(false)
+		} else {
+			setActiveDropdown(dropdownName)
 		}
+	}
 
-		if (isError) {
-			return <CarouselContainer>Error loading data</CarouselContainer>
+	const renderCarousel = (items, title, loading) => {
+		if (loading) {
+			return <CarouselContainer>Loading...</CarouselContainer>
 		}
 
 		return (
@@ -115,7 +189,6 @@ export default function Dashboard() {
 			</CarouselContainer>
 		)
 	}
-	
 
 	if (isLoading) {
 		return (
@@ -132,32 +205,139 @@ export default function Dashboard() {
 			</section>
 		)
 
-
 	return (
 		<section>
 			<Container>
 				<Details>
 					<h1>Dashboard</h1>
-					<p>Welcome, {user.username}!</p>
+					<Sentence>
+						<p>
+							Welcome&nbsp;
+							<WordButton
+								text={` ${user.username}`}
+								onClick={() =>
+									handleToggleDropdown('userDetails')
+								}
+							/>
+							!
+						</p>
+						<Arrow isClicked={activeDropdown === 'userDetails'} />
+						<Dropdown
+							ref={userDetailsRef}
+							$isClicked={activeDropdown === 'userDetails'}
+							$top="100%"
+							$left="0"
+							$transform="none"
+							$width="fit-content"
+						>
+							<Header>
+								<h3>Update your details...</h3>
+								<WordButton
+									text="Done"
+									onClick={handleToggleDropdown}
+								/>
+							</Header>
+							<form>
+								<label>Username</label>
+								<input
+									type="text"
+									name="username"
+									value={formValues.username}
+									onChange={handleInputChange}
+									required
+								/>
+								<label>Email</label>
+								<input
+									type="email"
+									name="email"
+									value={formValues.email}
+									onChange={handleInputChange}
+									required
+								/>
+								<label>Phone</label>
+								<input
+									type="text"
+									name="phone"
+									value={formValues.phone}
+									onChange={handleInputChange}
+									required
+								/>
+								<label>Address Line 1</label>
+								<input
+									type="text"
+									name="addressLine1"
+									value={formValues.addressLine1}
+									onChange={handleInputChange}
+									required
+								/>
+								<label>Address Line 2</label>
+								<input
+									type="text"
+									name="addressLine2"
+									value={formValues.addressLine2}
+									onChange={handleInputChange}
+								/>
+								<label>City</label>
+								<input
+									type="text"
+									name="city"
+									value={formValues.city}
+									onChange={handleInputChange}
+									required
+								/>
+								<label>Post Code</label>
+								<input
+									type="text"
+									name="postCode"
+									value={formValues.postcode}
+									onChange={handleInputChange}
+									required
+								/>
+								<ActionButton
+									type="action"
+									text="submit"
+									onClick={handleSaveUserDetails}
+								>
+									Save
+								</ActionButton>
+							</form>
+						</Dropdown>
+					</Sentence>
 					<Controls>
-						<Preferences>
-							<Sentence>
-								<p>
-									What&nbsp;
+						<Sentence>
+							<p>
+								What&nbsp;
+								<WordButton
+									text="type"
+									onClick={
+										activeDropdown === 'preferences'
+											? handleSavePreferences
+											: () =>
+													handleToggleDropdown(
+														'preferences'
+													)
+									}
+								/>
+								&nbsp;of books are you into?
+							</p>
+							<Arrow
+								isClicked={activeDropdown === 'preferences'}
+							/>
+							<Dropdown
+								ref={preferencesRef}
+								$isClicked={activeDropdown === 'preferences'}
+								$top="40%"
+								$left="0"
+								$transform="none"
+								$width="fit-content"
+							>
+								<Header>
+									<h3>Preferences</h3>
 									<WordButton
-										text="sort of books"
-										onClick={
-											dropdownOpen
-												? handleSavePreferences
-												: toggleDropdown
-										}
+										text="Done"
+										onClick={handleSavePreferences}
 									/>
-									&nbsp;are you into?
-								</p>
-								<Arrow isClicked={isClicked} />
-							</Sentence>
-
-							<Dropdown $isClicked={isClicked}>
+								</Header>
 								{categories.map((genre) => (
 									<Genre
 										key={genre}
@@ -169,29 +349,55 @@ export default function Dashboard() {
 									/>
 								))}
 							</Dropdown>
-						</Preferences>
+						</Sentence>
 
-						<p>
-							<WordButton to="/list" text="List" />
-							&nbsp;your books here...
-						</p>
-						<p>
-							or&nbsp;
-							<WordButton to="/browse" text="search" />
-							&nbsp;for available books.
-						</p>
+						<Sentence>
+							<p>
+								<WordButton to="/list" text="List" />
+								&nbsp;your books here...
+							</p>
+						</Sentence>
+						<Sentence>
+							<p>
+								Or&nbsp;
+								<WordButton to="/browse" text="browse" />
+								&nbsp;available books.
+							</p>
+						</Sentence>
 
-						<p>
-							See anything you&nbsp;
-							<WordButton text="like" />
-							?
-						</p>
-
+						<Sentence>
+							<p>
+								See anything you&nbsp;
+								<WordButton
+									text="like"
+									onClick={() =>
+										handleToggleDropdown('liked')
+									}
+								/>
+								?
+							</p>
+							<Arrow isClicked={activeDropdown === 'liked'} />
+							<Dropdown
+								ref={likedRef}
+								$isClicked={activeDropdown === 'liked'}
+								$top="40%"
+								$left="50%"
+								$transform="translateX(-50%)"
+								$width="100%"
+							>
+								{renderCarousel(
+									likedBooks,
+									'Liked Books',
+									likedBooksLoading
+								)}
+							</Dropdown>
+						</Sentence>
 					</Controls>
 				</Details>
 			</Container>
-				{renderCarousel(userListings, "Your Listings", userListingsLoading, userListingsError)}
-				{renderCarousel(recommendations, "Recommended for You", recommendationsLoading, recommendationsError)}
+
+			{renderCarousel(userBooks, 'Your Listings', loading)}
+			{renderCarousel(recommendations, 'Recommended for You', loading)}
 		</section>
 	)
 }
@@ -211,11 +417,13 @@ const Details = styled.div`
 	p {
 		display: flex;
 		align-items: center;
-		margin-bottom: var(--xs);
-
 		&:last-child {
 			margin-bottom: 0;
 		}
+	}
+	span {
+		color: var(--dkGreen);
+		font-weight: bold;
 	}
 `
 
@@ -234,48 +442,49 @@ const Controls = styled.div`
 	}
 `
 
-const Preferences = styled.div`
-	position: relative;
-`
-
 const Sentence = styled.div`
 	display: flex;
 	align-items: center;
+	margin-bottom: var(--xs);
+	position: relative;
+`
+
+const Header = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-bottom: var(--sm);
+	border-bottom: 1px solid var(--ltGreen);
 `
 
 const Dropdown = styled.div`
 	position: absolute;
-	top: 85%;
-	left: 0;
-	width: 100%;
-	z-index: 1000;
+	top: ${({ $top }) => $top};
+	left: ${({ $left }) => $left};
+	transform: ${({ $transform }) => $transform};
+	width: ${({ $width }) => $width};
+	z-index: ${({ $isClicked }) => ($isClicked ? '1000' : '-1')};
 	overflow: hidden;
 	max-height: ${({ $isClicked }) =>
 		$isClicked
-			? '50rem'
+			? 'auto'
 			: '0'}; /* Set a reasonable max-height for the open state */
 	opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
-	padding: ${({ $isClicked }) => ($isClicked ? 'var(--sm)' : '0')};
+	padding: var(--sm);
 	box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
 	display: flex;
 	flex-direction: column;
-	margin-top: 10px;
-	border: 1px solid #ccc;
+	margin-top: var(--lg);
+	border: 1px solid var(--ltGreen);
 	border-radius: var(--xs);
 	background: #fff;
 	transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-	label {
-		font-size: 1.2rem;
-		margin-bottom: var(--xs);
-	}
-	input {
-		padding: var(--xs);
-		font-size: 1.2rem;
-		border: 1px solid #ccc;
-		border-radius: var(--xs);
+	@media only screen and (max-width: 450px) {
+		width: 100%;
+		border-radius: 0;
 	}
 `
 
 const CarouselContainer = styled.div`
-
+	position: relative;
 `

@@ -4,23 +4,25 @@ import LinkButton from '../components/buttons/LinkButton'
 
 export default function Home() {
   return (
-    <Section>
-      <Info>
-        <h1>Welcome to Bookaroo!</h1>
-        <p>A place to discover and exchange old books.</p>
-        <p>Simply create an account, list your books and connect with other Bookaroos to swap or donate!</p>
-      </Info>
-      <LinkButton
-        to="/register"
-        text="Get Started"
-      >
-        Get Started
-      </LinkButton>
-    </Section>
+    <section>
+      <Container>
+        <Info>
+          <h1>Welcome to Bookaroo!</h1>
+          <p>A place to discover and exchange old books.</p>
+          <p>Simply create an account, list your books and connect with other Bookaroos to swap or donate!</p>
+        </Info>
+        <LinkButton
+          to="/register"
+          text="Get Started"
+        >
+          Get Started
+        </LinkButton>
+      </Container>
+    </section>
   )
 }
 
-const Section = styled.section`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('authToken'));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
 
   const { isLoading } = useQuery(

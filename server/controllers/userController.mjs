@@ -23,6 +23,22 @@ const getUserDetails = async (req, res) => {
 	}
 }
 
+const searchUsers = async (req, res) => {
+	const { userId } = req.query
+	try {
+		const users = await User.findAll({
+			where: {
+				id: userId,
+			},
+			attributes: { exclude: ['password'] },
+		})
+		res.json(users)
+	} catch (error) {
+		console.error('Error searching for users:', error)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+}
+
 const updateUserDetails = async (req, res) => {
 	const {
 		username,
@@ -34,9 +50,13 @@ const updateUserDetails = async (req, res) => {
 		postcode,
 	} = req.body
 
+	if (!username || !email || !phone || !addressLine1 || !city || !postcode) {
+		return res.status(400).json({ error: 'Missing required fields' })
+	}
+
 	try {
 		const response = await axios.get(
-			`https://api.geocodify.com/v2/geocode?api_key=${process.env.GEOCODIFY_API_KEY}&q=${addressLine1} ${addressLine2} ${city} ${postcode}`
+			`https://api.geocodify.com/v2/geocode?api_key=${process.env.GEOCODIFY_API_KEY}&q=${city}`
 		)
 
 		if (response.data.response.features.length === 0) {
@@ -56,8 +76,8 @@ const updateUserDetails = async (req, res) => {
 				addressLine2,
 				city,
 				postcode,
-				latitude: location[0],
-				longitude: location[1],
+				latitude: location[1],
+				longitude: location[0],
 			},
 			{ where: { id: req.user.id } }
 		)
@@ -101,4 +121,4 @@ const updatePreferences = async (req, res) => {
 	}
 }
 
-export { getUserDetails, updateUserDetails, updatePreferences }
+export { getUserDetails, updateUserDetails, updatePreferences, searchUsers }

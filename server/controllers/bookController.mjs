@@ -37,10 +37,42 @@ const listBook = async (req, res) => {
 	}
 }
 
+const deleteListing = async (req, res) => {
+	const { bookId } = req.params
+	try {
+		const book = await Book.findByPk(bookId)
+		if (!book) {
+			return res.status(404).json({ error: 'Book not found' })
+		}
+		await book.destroy()
+		res.status(204).end()
+	} catch (error) {
+		res.status(500).json({ error: error.message })
+	}
+}
+
 const getListedBooks = async (req, res) => {
 	try {
 		const books = await Book.findAll({
 			where: { userId: req.user.id },
+			include: {
+				model: User,
+				as: 'user',
+				attributes: [
+					'id',
+					'username',
+					'email',
+					'phone',
+					'addressLine1',
+					'addressLine2',
+					'city',
+					'postcode',
+					'latitude',
+					'longitude',
+				],
+			},
+			raw: true,
+			nest: true,
 		})
 		res.json(books)
 	} catch (error) {
@@ -67,20 +99,9 @@ const getRecommendations = async (req, res) => {
 					),
 				},
 			},
-		})
-		res.json(books)
-	} catch (error) {
-		console.error('Error fetching recommendations:', error)
-		res.status(500).json({ error: 'Internal server error' })
-	}
-}
-
-const getAllBooks = async (req, res) => {
-	try {
-		const books = await Book.findAll({
 			include: {
 				model: User,
-				as: 'Users',
+				as: 'user',
 				attributes: [
 					'id',
 					'username',
@@ -94,7 +115,45 @@ const getAllBooks = async (req, res) => {
 					'longitude',
 				],
 			},
+			raw: true,
+			nest: true,
 		})
+		res.json(books)
+	} catch (error) {
+		console.error('Error fetching recommendations:', error)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+}
+
+const getAllBooks = async (req, res) => {
+	try {
+		const books = await Book.findAll({
+			include: {
+				model: User,
+				as: 'user',
+				attributes: [
+					'id',
+					'username',
+					'email',
+					'phone',
+					'addressLine1',
+					'addressLine2',
+					'city',
+					'postcode',
+					'latitude',
+					'longitude',
+				],
+			},
+			raw: true,
+			nest: true,
+		})
+
+		// Log the first book and its associated user for debugging
+		// if (books.length > 0) {
+		//   console.log('First book:', books[56]);
+		//   console.log('Associated user:', books[56].user);
+		// }
+
 		res.status(200).json(books)
 	} catch (error) {
 		console.error('Error fetching all books:', error)
@@ -104,6 +163,7 @@ const getAllBooks = async (req, res) => {
 
 const searchBooks = async (req, res) => {
 	const { query } = req.query
+	const userId = req.user.id // Assuming you are getting the user ID from authenticated user
 
 	if (!query) {
 		return res.status(400).json({ error: 'Query parameter is required' })
@@ -112,10 +172,24 @@ const searchBooks = async (req, res) => {
 	try {
 		const books = await Book.findAll({
 			where: {
-				[Op.or]: [
-					{ title: { [Op.iLike]: `%${query}%` } }, // Search by title
-					{ author: { [Op.iLike]: `%${query}%` } }, // Search by author
-					{ category: { [Op.contains]: [query] } }, // Search by category (if category is an array)
+				[Op.and]: [
+					{
+						[Op.or]: [
+							{ title: { [Op.iLike]: `%${query}%` } }, // Search by title
+							{ author: { [Op.iLike]: `%${query}%` } }, // Search by author
+							sequelize.where(
+								sequelize.fn(
+									'array_to_string',
+									sequelize.col('category'),
+									','
+								),
+								{
+									[Op.iLike]: `%${query}%`,
+								}
+							), // Search by category
+						],
+					},
+					{ userId: { [Op.ne]: userId } }, // Exclude books listed by the current user
 				],
 			},
 		})
@@ -129,6 +203,7 @@ const searchBooks = async (req, res) => {
 
 export {
 	listBook,
+	deleteListing,
 	getListedBooks,
 	getRecommendations,
 	getAllBooks,

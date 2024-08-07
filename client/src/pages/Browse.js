@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { useBooks } from '../context/BooksContext'
 import WordButton from '../components/buttons/WordButton'
 import { PageHeader } from '../assets/styles/GlobalStyles'
 import BooksGallery from '../components/books/BooksGallery'
+import Carousel from '../components/carousel/Carousel'
 
 export default function Browse() {
-	const { books, searchBooks } = useBooks()
+	const { searchBooks } = useBooks()
 	const [isScrolled, setIsScrolled] = useState(false)
   const [query, setQuery] = useState('')
+	const [searchResults, setSearchResults] = useState([])
+	const [error, setError] = useState(null)
+	const ref = useRef(null)
+
+	const resultsRef = useRef(null)
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -23,14 +29,57 @@ export default function Browse() {
 	}, [])
 
  
-  useEffect(() => {
-    searchBooks(query)
-  }, [query, searchBooks])  
+  // useEffect(() => {
+  //   searchBooks(query)
+  // }, [query, searchBooks])  
+
+	useEffect(() => {
+    const fetchSearchResults = async () => {
+      try {
+        setError(null) // Clear any previous errors
+        const results = await searchBooks(query)
+        setSearchResults(results)
+        if (results.length === 0) {
+          setError('No results found. Please try a different search term.')
+        }
+      } catch (err) {
+        console.error('Error fetching search results:', err)
+        setError('An error occurred while searching. Please try again later.')
+        setSearchResults([])
+      }
+    }
+
+    if (query.trim()) {
+      fetchSearchResults()
+    } else {
+      setSearchResults([])
+      setError(null)
+    }
+  }, [query, searchBooks])
 	
-	// console.log(books)
+	// console.log(resultsRef.current?.clientHeight)
+
+	const renderSearchContent = () => {
+    if (error) {
+      return (
+				<SearchResults ref={resultsRef}>
+					<ErrorMessage>{error}</ErrorMessage>
+				</SearchResults>
+			)
+    }
+    if (searchResults.length > 0) {
+      return (
+        <SearchResults ref={resultsRef}>
+          <Carousel title="Search Results" items={searchResults} />
+        </SearchResults>
+      )
+    }
+    return null
+  }
+
 	return (
 		<>
-			<Controls $isScrolled={isScrolled}>
+			<Controls ref={ref} $isScrolled={isScrolled}>
 				<PageHeader style={{ maxWidth: '100rem' }}>
 					<h1>Browse</h1>
 					<WordButton to="/dashboard" text="Return" />
@@ -47,10 +96,11 @@ export default function Browse() {
             value={query}
           />
         </SearchBar>
+				{renderSearchContent()}
 			</Controls>
 			<section style={{ marginTop: '23rem' }}>
-				<Display>
-					<BooksGallery books={books} />
+				<Display >
+					<BooksGallery />
 				</Display>
 			</section>
 		</>
@@ -61,14 +111,13 @@ const Controls = styled.div`
 	position: fixed;
 	top: 5.8rem;
 	width: 100%;
-	height: 12rem;
+	max-height: 100%;
 	z-index: 100;
 	background-color: var(--white);
 	padding: var(--lg) 0;
-
 	box-shadow: ${(props) =>
 		props.$isScrolled ? '0 5px 5px rgba(0, 0, 0, 0.1)' : 'none'};
-	transition: var(--medium);
+	transition: var(--slow);
 	@media only screen and (max-width: 999px) {
 		padding: var(--sm) var(--md);
 	}
@@ -111,4 +160,24 @@ const SearchInput = styled.input`
 	border-radius: none;
 `
 
-const Display = styled.div``
+const SearchResults = styled.div`
+	max-width: 100rem;
+	margin: 0 auto;
+`
+
+const ErrorMessage = styled.div`
+  max-width: 100rem;
+  margin: 1rem auto;
+  padding: var(--sm);
+  background-color: var(--creamA);
+  color: var(--mdBrown);
+  border: 1px solid var(--creamB);
+  border-radius: 0.25rem;
+  text-align: center;
+`
+
+const Display = styled.div`
+  transition: max-height 0.5s ease, opacity 0.5s ease;
+
+  overflow: hidden;
+`

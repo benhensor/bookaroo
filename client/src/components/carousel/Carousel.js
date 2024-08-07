@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { useWindowWidth } from '../../utils/useWindowWidth'
-import Book from '../books/Book'
+import Book from '../books/Thumbnail'
 import Chevron from '../../icons/Chevron'
 
 export default function Carousel({ items, title }) {
   const [currentIndex, setCurrentIndex] = useState(0)
 	const [leftChevronVisible, setLeftChevronVisible] = useState(false)
   const [rightChevronVisible, setRightChevronVisible] = useState(false)
+  const [message, setMessage] = useState('')
 
 	const windowWidth = useWindowWidth()
 	
@@ -18,15 +19,51 @@ export default function Carousel({ items, title }) {
 		return 5
 	}
 
+  // console.log('items:', title, items)
+
 	const itemsPerPage = getItemsPerPage()
+
+
+
+  const uniqueItems = useMemo(() => {
+    const seen = new Set();
+    return items.filter(item => {
+      if (seen.has(item.id)) {
+        return false;
+      }
+      seen.add(item.id);
+      return true;
+    });
+  }, [items]);
+
+
+
+  useEffect(() => {
+    setCurrentIndex(0)
+    if (items.length === 0) {
+      setMessage('No books found')
+    }
+  }, [items])
+
+
+
+  // useEffect(() => {
+  //   console.log('message', message)
+  // }, [message])
+
+
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) => Math.min(prevIndex + itemsPerPage, items.length - itemsPerPage))
   }
 
+
+
   const handlePrev = () => {
     setCurrentIndex((prevIndex) => Math.max(prevIndex - itemsPerPage, 0))
   }
+
+
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowRight') {
@@ -37,10 +74,14 @@ export default function Carousel({ items, title }) {
     }
   }
 
+
+
 	useEffect(() => {
     setLeftChevronVisible(currentIndex > 0)
     setRightChevronVisible(currentIndex + itemsPerPage < items.length)
   }, [currentIndex, items.length, itemsPerPage])
+
+
 
 	useEffect(() => {
 		setCurrentIndex((prevIndex) => {
@@ -50,6 +91,17 @@ export default function Carousel({ items, title }) {
 	}, [items.length, itemsPerPage])
 
 
+
+  // Debugging
+  // useEffect(() => {
+  //   console.log(title, items)
+  // }, [title, items])
+
+
+
+  const isEmpty = uniqueItems.length === 0
+
+
   return (
     <CarouselContainer
       tabIndex={0}
@@ -57,26 +109,32 @@ export default function Carousel({ items, title }) {
     >
       <h2>{title}</h2>
       <CarouselWrapper>
-        <ChevronContainer $position={'left'}>
+        {isEmpty ? (
+          <ErrorMessage>{message}</ErrorMessage>
+        ) : (
+          <>
+            <ChevronContainer $position={'left'}>
 
-        	<Chevron isVisible={leftChevronVisible} boolean={true} onClick={handlePrev} />
+              <Chevron isVisible={leftChevronVisible} boolean={true} onClick={handlePrev} />
 
-        </ChevronContainer>
+            </ChevronContainer>
 
-        <BooksViewport>
-          <BooksWrapper $offset={currentIndex / itemsPerPage}>
-            {items.map((item) => (
-              <BookPreview key={item.id}>
-                <Book book={item} />
-              </BookPreview>
-            ))}
-          </BooksWrapper>
-        </BooksViewport>
+            <BooksViewport>
+              <BooksWrapper $offset={currentIndex / itemsPerPage}>
+                {uniqueItems.map((item) => (
+                  <BookPreview key={item.id}>
+                    <Book book={item} />
+                  </BookPreview>
+                ))}
+              </BooksWrapper>
+            </BooksViewport>
 
-        <ChevronContainer $position={'right'}>
-          <Chevron isVisible={rightChevronVisible} indexboolean={false} onClick={handleNext} />
-        </ChevronContainer>
-      </CarouselWrapper>
+            <ChevronContainer $position={'right'}>
+              <Chevron isVisible={rightChevronVisible} indexboolean={false} onClick={handleNext} />
+            </ChevronContainer>
+          </>
+        )}
+        </CarouselWrapper>
     </CarouselContainer>
   )
 }
@@ -115,16 +173,16 @@ const BooksViewport = styled.div`
 const BooksWrapper = styled.div`
   display: flex;
   transition: transform 0.5s ease;
-  transform: translateX(${(props) => props.$offset * -100}%);
-`
+  transform: ${(props) =>
+    props.$isEmpty ? 'translateX(0)' : `translateX(${props.$offset * -100}%)`};
+  width: ${(props) => (props.$isEmpty ? '100%' : 'auto')};
+  justify-content: ${(props) => (props.$isEmpty ? 'center' : 'initial')};
+`;
+
 
 const BookPreview = styled.div`
   flex: 0 0 calc(100% / 5);
 	position: relative;
-  p {
-    margin-top: var(--xs);
-    font-size: 1rem;
-  }
 	@media only screen and (max-width: 999px) {
 		flex: 0 0 calc(100% / 4);
 	}
@@ -134,4 +192,15 @@ const BookPreview = styled.div`
 	@media only screen and (max-width: 679px) {
 		flex: 0 0 calc(100% / 2);
 	}
+`
+
+const ErrorMessage = styled.div`
+  width: 100%;
+  margin: 1rem auto;
+  padding: var(--sm);
+  background-color: var(--creamA);
+  color: var(--mdBrown);
+  border: 1px solid var(--creamB);
+  border-radius: 0.25rem;
+  text-align: center;
 `

@@ -26,14 +26,20 @@ const Wrapper = styled.div`
     $boolean ? 'rotate(0deg)' : 'rotate(180deg)'};
 	opacity: ${({ $isVisible }) => ($isVisible ? '1' : '0')};
 	transition: var(--carousel);
-	margin-bottom: var(--xl);
+	margin-bottom: var(--xxl);
 `
 
 const SVG = styled.svg`
-		width: 2rem;
-		height: 100%;
+	width: 2rem;
+	height: 100%;
+	transition: var(--carousel);
   path {
     stroke: var(--dkGreenA);
     stroke-width: 1;
   }
+	&:hover {
+		path {
+			stroke: var(--accentGreen);
+		}
+	}
 `

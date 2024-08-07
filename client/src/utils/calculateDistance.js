@@ -1,26 +1,32 @@
 export const calcDistance = (userLat, userLon, listingLat, listingLon) => {
-	if (userLat === null || userLon === null) {
-		// User's latitude and longitude not available
-		return null
+	// console.log('calcDistance called...', userLat, userLon, listingLat, listingLon);
+  
+	// Check for invalid inputs
+	if (!userLat || !userLon || !listingLat || !listingLon) {
+		console.error('Invalid coordinates provided.');
+		return null;
 	}
 
-	const earthRadius = 6371 // Radius of the earth in km
-	const latitudeDifference = deg2rad(listingLat - userLat) // deg2rad below
-	const longitudeDifference = deg2rad(listingLon - userLon)
+	const earthRadius = 6371; // Radius of the Earth in kilometers
 
+	// Convert degrees to radians
+	const deltaLat = deg2rad(listingLat - userLat);
+	const deltaLon = deg2rad(listingLon - userLon);
+
+	// Haversine formula
 	const a =
-		Math.sin(latitudeDifference / 2) * Math.sin(latitudeDifference / 2) +
+		Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
 		Math.cos(deg2rad(userLat)) *
-			Math.cos(deg2rad(listingLat)) *
-			Math.sin(longitudeDifference / 2) *
-			Math.sin(longitudeDifference / 2)
+		Math.cos(deg2rad(listingLat)) *
+		Math.sin(deltaLon / 2) *
+		Math.sin(deltaLon / 2);
 
-	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-	const distance = earthRadius * c // Distance in km
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	const distance = earthRadius * c; // Distance in kilometers
 
-	return distance
-}
+	return Math.round(distance);
+};
 
 const deg2rad = (deg) => {
-	return deg * (Math.PI / 180)
-}
+	return deg * (Math.PI / 180);
+};

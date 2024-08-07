@@ -10,11 +10,13 @@ export default function LinkButton({ to, text, onClick }) {
     }
   }
 
+  // console.log('to:', to);
+
   return (
     <StyledLink
       to={to}
-      onClick={handleClick}
       $text={text}
+      onClick={handleClick}
     >
       {text}
     </StyledLink>
@@ -22,9 +24,8 @@ export default function LinkButton({ to, text, onClick }) {
 }
 
 const StyledLink = styled(Link)`
-  display: inline-block;
-  box-sizing: border-box;
-  padding: var(--sm) var(--md);
+ 
+  padding: .6rem var(--md);
   border: none;
   border-radius: var(--xs);
   background-color: ${(props) => props.$text === 'Sign Out' ? 'var(--danger)' : 'var(--accentGreen)'};

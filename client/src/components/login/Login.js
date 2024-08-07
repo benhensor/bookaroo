@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import ActionButton from '../buttons/ActionButton'
 import WordButton from '../buttons/WordButton'
+import { Content } from '../../assets/styles/GlobalStyles'
 
 const Login = () => {
 	const navigate = useNavigate()
@@ -36,6 +36,7 @@ const Login = () => {
 	return (
 		<section>
 			<Content>
+				<h1>Login</h1>
 				<form onSubmit={onSubmit}>
 					<input
 						type="email"
@@ -53,7 +54,7 @@ const Login = () => {
 						placeholder="Password"
 						required
 					/>
-					<ActionButton type="submit" text="Login" />
+					<ActionButton type="action" text="Login" />
 				</form>
 				<p>Don't have an account? &nbsp;<WordButton to="/register" text="Register" /></p>
 				
@@ -63,13 +64,3 @@ const Login = () => {
 }
 
 export default Login
-
-const Content = styled.div`
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	gap: var(--lg);
-`
-

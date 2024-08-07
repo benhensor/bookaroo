@@ -1,9 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
-export default function ActionButton({ text, onClick }) {
+export default function ActionButton({ type, text, onClick }) {
+  const [backgroundColor, setBackgroundColor] = useState('')
+  const [backgroundHoverColor, setBackgroundHoverColor] = useState('')
+  const [color, setColor] = useState('')
 
-
+  useEffect(() => {
+    if (type === 'action') {
+      setColor('var(--blkGreen)')
+      setBackgroundColor('var(--accentGreen)')
+      setBackgroundHoverColor('var(--accentLtGreen)')
+    }
+    if (type === 'contact') {
+      setColor('var(--white)')
+      setBackgroundColor('var(--ltBrown)')
+      setBackgroundHoverColor('var(--dkBrown)')
+    }
+    if (type === 'delete') {
+      setColor('var(--white)')
+      setBackgroundColor('var(--danger)')
+      setBackgroundHoverColor('var(--dangerDk)')
+    }
+  }, [type])
 
   const handleClick = (event) => {
     if (onClick) {
@@ -14,6 +33,9 @@ export default function ActionButton({ text, onClick }) {
   return (
     <StyledButton
       onClick={handleClick}
+      $color={color}  
+      $backgroundColor={backgroundColor}
+      $backgroundHoverColor={backgroundHoverColor}
     >
       {text}
     </StyledButton>
@@ -21,16 +43,13 @@ export default function ActionButton({ text, onClick }) {
 }
 
 const StyledButton = styled.button`
-  display: inline-block;
-  box-sizing: border-box;
-  padding: var(--sm) var(--md);
-  background-color: var(--accentGreen);
-  color: var(--blkGreen);
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
+  color: ${({ $color }) => $color};
   font-size: 1.2rem;
   cursor: pointer;
   transition: var(--fast);
   &:hover {
-    background-color: var(--dkGreen);
-    color: var(--white);
+    background-color: ${({ $backgroundHoverColor }) => $backgroundHoverColor};
+    color: ${({ $color }) => $color};
   }
 `

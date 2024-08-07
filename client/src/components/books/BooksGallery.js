@@ -9,6 +9,8 @@ export default function BooksGallery() {
   const { user } = useAuth()
   const { books } = useBooks()
 
+  // console.log(books)
+
   // Remove users listings from books array
   const booksFiltered = books.filter((book) => book.userId !== user.id)
 
@@ -39,9 +41,9 @@ export default function BooksGallery() {
   return (
     <GalleryContainer>
       {uniqueCategories.map((category) => (
-        <CategorySection key={category}>
+        <CarouselWrapper key={category}>
           <Carousel title={category} items={getBooksByCategory(category)} />
-        </CategorySection>
+        </CarouselWrapper>
       ))}
     </GalleryContainer>
   )
@@ -53,7 +55,7 @@ const GalleryContainer = styled.div`
   align-items: center;
 `
 
-const CategorySection = styled.div`
+const CarouselWrapper = styled.div`
   width: 100%;
   margin-bottom: var(--lg);
 `

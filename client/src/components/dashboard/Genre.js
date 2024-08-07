@@ -31,9 +31,9 @@ export default Genre
 const Container = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
+  width: 30rem;
   padding: var(--sm);
+  border-bottom: 1px solid var(--ltGreen);
   cursor: pointer;
   background-color: ${({ $isActive }) => $isActive ? 'var(--accentGreen)' : 'transparent'};
   transition: var(--fast);
