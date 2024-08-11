@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo, useCallback } from 'react'
+import React, { createContext, useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useQueryClient } from 'react-query'
 import axios from 'axios'
 
@@ -39,6 +39,13 @@ export const AuthProvider = ({ children }) => {
 			enabled: !!sessionStorage.getItem('authToken'), // only run query if token exists
 		}
 	)
+
+	useEffect(() => {
+		if (user) {
+			// Invalidate the messages query when the user changes
+			queryClient.invalidateQueries('messages');
+		}
+	}, [user, queryClient]);
 
 	// Wrap login and logout in useCallback to prevent unnecessary re-creations
 	const login = useCallback(

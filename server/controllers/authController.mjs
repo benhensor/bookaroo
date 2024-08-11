@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
 	const {
 		username,
 		email,
@@ -44,7 +44,7 @@ const register = async (req, res) => {
 	}
 }
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
 	const { email, password } = req.body
 	try {
 		const user = await User.findOne({ where: { email } })
@@ -62,5 +62,3 @@ const login = async (req, res) => {
 		res.status(500).json({ error: error.message })
 	}
 }
-
-export { register, login }

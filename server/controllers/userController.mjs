@@ -3,7 +3,7 @@ import Book from '../models/Book.mjs'
 import { Op } from 'sequelize'
 import axios from 'axios'
 
-const getUserDetails = async (req, res) => {
+export const getUserDetails = async (req, res) => {
 	try {
 		// Ensure that the user information is correctly set by the middleware
 		if (!req.user || !req.user.id) {
@@ -25,7 +25,7 @@ const getUserDetails = async (req, res) => {
 	}
 }
 
-const searchUsers = async (req, res) => {
+export const searchUsers = async (req, res) => {
 	const { userId } = req.query
 	try {
 		const users = await User.findAll({
@@ -52,7 +52,7 @@ const searchUsers = async (req, res) => {
 	}
 }
 
-const updateUserDetails = async (req, res) => {
+export const updateUserDetails = async (req, res) => {
 	const {
 		username,
 		email,
@@ -110,7 +110,7 @@ const updateUserDetails = async (req, res) => {
 	}
 }
 
-const likeBook = async (req, res) => {
+export const likeBook = async (req, res) => {
 	try {
 		const { bookId } = req.body
 		const userId = req.user.id
@@ -138,7 +138,7 @@ const likeBook = async (req, res) => {
 	}
 }
 
-const unlikeBook = async (req, res) => {
+export const unlikeBook = async (req, res) => {
 	try {
 		const { bookId } = req.body
 		const userId = req.user.id
@@ -166,7 +166,7 @@ const unlikeBook = async (req, res) => {
 	}
 }
 
-const getLikedBooks = async (req, res) => {
+export const getLikedBooks = async (req, res) => {
 	try {
 		const userId = req.user.id
 
@@ -209,7 +209,7 @@ const getLikedBooks = async (req, res) => {
 	}
 }
 
-const updatePreferences = async (req, res) => {
+export const updatePreferences = async (req, res) => {
 	const { preferences } = req.body
 	const userId = req.user.id
 	console.log('Updating preferences:', userId, preferences)
@@ -231,14 +231,4 @@ const updatePreferences = async (req, res) => {
 		console.error('Error updating preferences:', error)
 		res.status(500).json({ message: 'Internal server error' })
 	}
-}
-
-export {
-	getUserDetails,
-	searchUsers,
-	updateUserDetails,
-	likeBook,
-	unlikeBook,
-	getLikedBooks,
-	updatePreferences,
 }

@@ -3,7 +3,7 @@ import User from '../models/User.mjs'
 import Book from '../models/Book.mjs'
 import { Op } from 'sequelize'
 
-const listBook = async (req, res) => {
+export const listBook = async (req, res) => {
 	const {
 		isbn,
 		coverImg,
@@ -37,7 +37,7 @@ const listBook = async (req, res) => {
 	}
 }
 
-const deleteListing = async (req, res) => {
+export const deleteListing = async (req, res) => {
 	const { bookId } = req.params
 	try {
 		const book = await Book.findByPk(bookId)
@@ -51,7 +51,7 @@ const deleteListing = async (req, res) => {
 	}
 }
 
-const getListedBooks = async (req, res) => {
+export const getListedBooks = async (req, res) => {
 	try {
 		const books = await Book.findAll({
 			where: { userId: req.user.id },
@@ -80,7 +80,7 @@ const getListedBooks = async (req, res) => {
 	}
 }
 
-const getRecommendations = async (req, res) => {
+export const getRecommendations = async (req, res) => {
 	const { userId, preferences } = req.query
 
 	if (!preferences || !Array.isArray(preferences)) {
@@ -125,7 +125,7 @@ const getRecommendations = async (req, res) => {
 	}
 }
 
-const getAllBooks = async (req, res) => {
+export const getAllBooks = async (req, res) => {
 	try {
 		const { ids } = req.query // Get the `ids` query parameter
 
@@ -163,7 +163,7 @@ const getAllBooks = async (req, res) => {
 	}
 }
 
-const searchBooks = async (req, res) => {
+export const searchBooks = async (req, res) => {
 	const { query } = req.query
 	const userId = req.user.id // Assuming you are getting the user ID from authenticated user
 
@@ -201,13 +201,4 @@ const searchBooks = async (req, res) => {
 		console.error('Error searching books:', error)
 		res.status(500).json({ error: 'Internal server error' })
 	}
-}
-
-export {
-	listBook,
-	deleteListing,
-	getListedBooks,
-	getRecommendations,
-	getAllBooks,
-	searchBooks,
 }

@@ -1,18 +1,20 @@
 import React, { createContext, useContext, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useAuth } from './AuthContext'
 import axios from 'axios'
 
 const MessagesContext = createContext()
 
 export const MessagesProvider = ({ children }) => {
     const queryClient = useQueryClient()
+    const { user } = useAuth()
 
     const fetchMessages = async () => {
         const token = sessionStorage.getItem('authToken')
         if (!token) {
             throw new Error('User not authenticated')
         }
-
+        // console.log(token)
         const { data } = await axios.get(
             `${process.env.REACT_APP_API_URL}/api/messages/inbox`,
             {
@@ -25,9 +27,14 @@ export const MessagesProvider = ({ children }) => {
     }
 
     const { data: messages, isLoading: isMessagesLoading, isError } = useQuery(
-        'messages',
-        fetchMessages,
+        ['messages', user?.id],
+        async () => {
+            const token = sessionStorage.getItem('authToken')
+            if (!token) throw new Error('User not authenticated')
+            return fetchMessages()
+        },
         {
+            enabled: !!user?.id, // Only run the query if the user is defined
             refetchOnWindowFocus: false,
             refetchOnMount: true,
             staleTime: Infinity, // This prevents automatic refetches
@@ -51,14 +58,15 @@ export const MessagesProvider = ({ children }) => {
                 await queryClient.cancelQueries('messages')
                 const previousMessages = queryClient.getQueryData('messages')
 
-                queryClient.setQueryData('messages', (old) =>
-                    old.filter((message) => message.id !== messageId)
-                )
+                queryClient.setQueryData('messages', (old) => {
+                    if (!old) return []
+                    return old.filter((message) => message.id !== messageId)
+                })
 
                 return { previousMessages }
             },
             onError: (err, messageId, context) => {
-                queryClient.setQueryData('messages', context.previousMessages)
+                queryClient.setQueryData('messages', context.previousMessages || [])
             },
             onSettled: () => {
                 queryClient.invalidateQueries('messages')
@@ -84,18 +92,19 @@ export const MessagesProvider = ({ children }) => {
                 await queryClient.cancelQueries('messages')
                 const previousMessages = queryClient.getQueryData('messages')
 
-                queryClient.setQueryData('messages', (old) =>
-                    old.map((message) =>
+                queryClient.setQueryData('messages', (old) => {
+                    if (!old) return []
+                    return old.map((message) =>
                         message.id === messageId
                             ? { ...message, isRead: true }
                             : message
                     )
-                )
+                })
 
                 return { previousMessages }
             },
             onError: (err, messageId, context) => {
-                queryClient.setQueryData('messages', context.previousMessages)
+                queryClient.setQueryData('messages', context.previousMessages || [])
             },
             onSettled: () => {
                 queryClient.invalidateQueries('messages')
@@ -123,18 +132,19 @@ export const MessagesProvider = ({ children }) => {
 
                 if (!previousMessages) return { previousMessages: [] }
 
-                queryClient.setQueryData('messages', (old = []) =>
-                    old.map((message) =>
+                queryClient.setQueryData('messages', (old = []) => {
+                    if (!old) return []
+                    return old.map((message) =>
                         message.id === messageId
                             ? { ...message, isRead: false }
                             : message
                     )
-                )
+                })
 
                 return { previousMessages }
             },
             onError: (err, messageId, context) => {
-                queryClient.setQueryData('messages', context.previousMessages)
+                queryClient.setQueryData('messages', context.previousMessages || [])
             },
             onSettled: () => {
                 queryClient.invalidateQueries('messages')

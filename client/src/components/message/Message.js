@@ -1,11 +1,16 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { useAuth } from '../../context/AuthContext'
+import { useBooks } from '../../context/BooksContext'
 import { useMessages } from '../../context/MessagesContext'
 import CollapsibleItem from '../dashboard/CollapsibleItem'
 import Button from '../buttons/Button'
 import Trash from '../../icons/Trash'
 
 export default function Message({ message, isOpen, onToggle }) {
+
+  const { searchUsers } = useAuth()
+  const { setBook, setBookOwner, getBookById } = useBooks()
 	const { markAsUnread, deleteMessage } = useMessages()
 
 	const formatDate = (dateString) => {
@@ -21,7 +26,17 @@ export default function Message({ message, isOpen, onToggle }) {
 			.join('-')
 	}
 
-  const handleReplyClick = () => {}
+  const handleReplyClick = () => {
+    const book = getBookById(message.bookId)
+    if (book) {
+      setBook(book)
+      setBookOwner(book.user[0]) // Assuming book.user is an array
+      // Navigate to the reply form, e.g., using `navigate('/contact')`
+    } else {
+      console.error('Book not found')
+    }
+  }
+
 
   const handleMarkUnread = () => {
     markAsUnread(message.id)
@@ -54,8 +69,8 @@ export default function Message({ message, isOpen, onToggle }) {
             </MessageBody>
             <MessageControls>
               <div>
-                <Button type="message" text="Reply" />
-                <Button type="message" text="Mark as unread" onClick={handleMarkUnread}/>
+                <Button type="message" text="Reply" onClick={handleReplyClick} to='/contact' state={{message}} />
+                <Button type="message" text="Mark as unread" onClick={handleMarkUnread} />
               </div>
               <Trash
                 type="message"

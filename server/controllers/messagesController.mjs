@@ -9,7 +9,7 @@ export const getAllMessages = async (req, res) => {
 
 		const messages = await Message.findAll({
 			where: {
-				[Op.or]: [{ senderId: userId }, { recipientId: userId }],
+				recipientId: userId,
 			},
 			include: [
 				{
@@ -25,8 +25,30 @@ export const getAllMessages = async (req, res) => {
 				{
 					model: Book,
 					as: 'book',
-					attributes: ['title', 'author'],
+					attributes: [
+						'id',
+						'isbn',
+						'coverImg',
+						'title', 
+						'author',
+						'publisher',
+						'publishedDate',
+						'category',
+						'condition',
+						'notes',
+					],
 				},
+				// {
+				// 	model: Message,
+				// 	as: 'parentMessage',
+				// 	include: [
+				// 		{
+				// 			model: User,
+				// 			as: 'sender',
+				// 			attributes: ['username', 'email'],
+				// 		},
+				// 	]
+				// },
 			],
 			order: [['createdAt', 'DESC']], // Sort messages by creation date, newest first
 		})
@@ -46,6 +68,7 @@ export const sendMessage = async (req, res) => {
 		const sender = await User.findByPk(senderId)
 		const recipient = await User.findByPk(recipientId)
 		const book = await Book.findByPk(bookId)
+
 
 		if (!sender || !recipient || !book) {
 			return res

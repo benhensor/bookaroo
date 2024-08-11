@@ -10,73 +10,52 @@ import Button from '../buttons/Button'
 
 export default function Thumbnail({ book }) {
 	const navigate = useNavigate()
-	const { user, searchUsers } = useAuth()
+	const { user } = useAuth()
 	const { deleteListing } = useUser()
-	const { selectCurrentBook } = useBooks()
+	const { setBook, setBookOwner } = useBooks()
 	const [isHovered, setIsHovered] = useState(false)
-	const [bookOwner, setBookOwner] = useState(null)
 	const [distance, setDistance] = useState(null)
 
-	const currentBook = [book, bookOwner]
-	//console.log('currentBook', currentBook)
+	// console.log('currentBook', book)
 
 	useEffect(() => {
-		const bookOwnerId = book.userId
-		const getOwnerOfBook = async () => {
-			try {
-				const ownerData = await searchUsers(bookOwnerId)
-				if (ownerData) {
-					// console.log('response', ownerData[0]);
-					setBookOwner(ownerData[0])
-				} else {
-					console.log('No owner data found')
-				}
-			} catch (error) {
-				console.error('Error getting book owner:', error)
-			}
-		}
-		if (bookOwnerId) {
-			getOwnerOfBook()
-		}
-	}, [book.userId, searchUsers])
-
-	// useEffect(() => {
-	// 	if (user && book && Array.isArray(book.user) && book.user.length > 0) {
-	// 		setBookOwner(book.user[0]) // Safely set bookOwner
-	// 	}
-	// }, [user, book])
-
-	useEffect(() => {
-		if (bookOwner) {
+		if (book && book.user && book.user[0]) {
+			const bookOwner = book.user[0]
 			const userLat = user?.latitude
 			const userLon = user?.longitude
 			const listingLat = bookOwner?.latitude
 			const listingLon = bookOwner?.longitude
 			setDistance(calcDistance(userLat, userLon, listingLat, listingLon))
 		}
-	}, [bookOwner, user])
+	}, [book, user])
 
-	// useEffect(() => {
-	// 	console.log('distance', book, bookOwner, distance)
-	// }, [book, bookOwner, distance])
-
-	const handleClick = (e) => {
+	const handleDeleteClick = (e) => {
 		e.stopPropagation()
 		deleteListing(book.id)
-		// console.log('clicked')
-	}
-
-	const handleBookClick = () => {
-		// console.log('clicked')
-		const currentBook = [book, bookOwner]
-		selectCurrentBook(currentBook)
-		navigate(`/book`)
 	}
 
 	const handleContactClick = (e) => {
 		e.stopPropagation()
-		selectCurrentBook(currentBook)
+		if (book && book.user && book.user[0]) {
+			setBook(book)
+			setBookOwner(book.user[0])
+			navigate(`/contact`)
+		} else {
+			console.error('Book or book owner is not properly defined')
+		}
 	}
+
+	const handleBookClick = () => {
+		if (book && book.user && book.user[0]) {
+			setBook(book)
+			setBookOwner(book.user[0])
+			navigate(`/book`)
+		} else {
+			console.error('Book or book owner is not properly defined')
+		}
+	}
+
+
 
 	return (
 		<>
@@ -100,7 +79,7 @@ export default function Thumbnail({ book }) {
 							<Button
 								type="thumbnail"
 								text="Delete"
-								onClick={handleClick}
+								onClick={handleDeleteClick}
 								width="150px"
 							/>
 						</Controls>
@@ -110,7 +89,6 @@ export default function Thumbnail({ book }) {
 							<ButtonContainer>
 								<Button
 									type="thumbnail"
-									to="/contact"
 									text="Contact"
 									onClick={handleContactClick}
 								/>

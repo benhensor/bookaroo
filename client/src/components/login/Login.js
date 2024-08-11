@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../buttons/Button'
 import { Content } from '../../assets/styles/GlobalStyles'
+import { P } from '../../assets/styles/LoginStyles'
 
 const Login = () => {
 	const navigate = useNavigate()
@@ -29,7 +29,6 @@ const Login = () => {
 			navigate('/dashboard')
 		} catch (error) {
 			console.error('Error during login:', error.message);
-			// Display error message to user
 		} 
 	}
 
@@ -64,7 +63,3 @@ const Login = () => {
 }
 
 export default Login
-
-const P = styled.p`
-	margin-top: var(--sm);
-`

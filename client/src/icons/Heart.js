@@ -39,7 +39,7 @@ export default function Heart({ bookId, onClick }) {
 	}
 
 	return (
-		<SVG
+		<HeartSVG
 			onClick={handleToggleLike}
 			x="0"
 			y="0"
@@ -57,11 +57,11 @@ export default function Heart({ bookId, onClick }) {
 				stroke={isLiked ? 'var(--white)' : 'var(--blkGreen)'}
 				strokeWidth="1px"
 			></path>
-		</SVG>
+		</HeartSVG>
 	)
 }
 
-const SVG = styled.svg`
+const HeartSVG = styled.svg`
 	position: absolute;
 	top: 0.5rem;
 	right: 0.5rem;

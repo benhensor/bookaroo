@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { useWindowWidth } from '../../utils/useWindowWidth'
 import { Link } from 'react-router-dom'
 
-export default function Button({ type, text, onClick, to }) {
+export default function Button({ type, text, onClick, to, state }) {
 
 	const mobile = useWindowWidth() < 768
+
+	// useEffect(() => {
+	// 	console.log('button', to, state)
+	// }, [to, state])
 
 	const handleClick = (event) => {
 		if (onClick) {
@@ -38,14 +42,13 @@ export default function Button({ type, text, onClick, to }) {
 				}
 			case 'thumbnail':
 				return {
-					as: Link,
+					as: 'button',
 					backgroundColor: text === 'Delete' ? 'var(--dangerDk)' : 'var(--accentGreen)',
 					backgroundHoverColor: text === 'Delete' ? 'var(--danger)' : 'var(--accentLtGreen)',
 					color: text === 'Delete' ? 'var(--white)' : 'var(--blkGreen)',
 					width: mobile ? '130px' : '150px',
 					padding: '.6rem var(--md)',
-					fintSize: '1.2rem',
-					to,
+					fontSize: '1.2rem',
 				}
 			case 'delete':
 				return {
@@ -76,7 +79,8 @@ export default function Button({ type, text, onClick, to }) {
 					colorHover: 'var(--accentGreen)',
 					fontSize: '1.4rem',
 					padding: 'var(--sm) 0',
-
+					to,
+					state,
 				}
 			case 'dashboard':
 				return {
@@ -126,7 +130,9 @@ export default function Button({ type, text, onClick, to }) {
 			$width={width}
 			$textDecoration={textDecoration}
 			$padding={padding}
-			to={to} // Spread any additional props like 'to' for Link
+			{...as === Link && { to }}
+			{...as === Link && { state }}	
+
 		>
 			{text}
 		</StyledButton>

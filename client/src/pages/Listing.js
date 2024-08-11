@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useUser } from '../context/UserContext'
-import styled from 'styled-components'
 import axios from 'axios'
 import Button from '../components/buttons/Button'
 import { PageHeader } from '../assets/styles/GlobalStyles'
+import { Block, ErrorMessage, SuccessMessage } from '../assets/styles/ListingStyles'
 
 
 export default function Listing() {
@@ -135,7 +135,6 @@ export default function Listing() {
 					notes: '',
 					userId: user?.id || '',
 				})
-				// console.log('Book data:', detailedBook)
 				setError('') // Clear any previous errors
 			} catch (error) {
 				console.error('Error fetching detailed book info:', error)
@@ -156,7 +155,6 @@ export default function Listing() {
 	const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate fields before submission
     if (!bookData.title || !bookData.condition || !bookData.category.length) {
       setError('Please fill in all required fields.');
       return;
@@ -293,30 +291,3 @@ export default function Listing() {
 		</section>
 	)
 }
-
-const Block = styled.div`
-	width: fit-content;
-	margin: 0 auto var(--lg) auto;
-	border: 1px solid var(--greyGreen);
-	padding: var(--lg);
-	@media only screen and (max-width: 450px) {
-		width: 100%;
-	}
-`
-
-const ErrorMessage = styled.p`
-	color: red;
-	font-weight: bold;
-	margin-top: 10px;
-`
-
-const SuccessMessage = styled.div`
-  max-width: 100rem;
-  margin: var(--sm) auto;
-  padding: var(--sm);
-  background-color: var(--creamA);
-  color: var(--mdBrown);
-  border: 1px solid var(--creamB);
-  border-radius: var(--xs);
-  text-align: center;
-`

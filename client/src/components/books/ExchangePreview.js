@@ -9,11 +9,11 @@ export default function Thumbnail({ book }) {
     <div>
 			<BookContainer>
 						<BookCover>
-							<img src={book.coverImg} alt={book.title} />
+							<img src={book?.coverImg} alt={book?.title} />
 						</BookCover>
 				<BookDetails>
-					<h3>{book.title}</h3>
-					<p>{book.author}</p>
+					<h3>{book?.title}</h3>
+					<p>{book?.author}</p>
 				</BookDetails>
 			</BookContainer>
 		</div>
@@ -28,6 +28,7 @@ const BookContainer = styled.div`
 const BookCover = styled.div`
 	width: 260px;
 	max-height: 400px;
+	margin-bottom: var(--sm);
 	img {
 		aspect-ratio: auto 260 / 400;
 		max-width: 100%;
@@ -38,9 +39,8 @@ const BookCover = styled.div`
 `
 
 const BookDetails = styled.div`
-	width: 100%;
-	margin-top: var(--sm);
-	text-align: center;
+	width: 260px;
+	padding-top: var(--sm);
 	h3 {
 		color: var(--dkGreenA);
 		font-size: clamp(1.2rem, 2vw, 1.6rem);
