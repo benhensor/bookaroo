@@ -14,6 +14,7 @@ import {
 	DashboardHeader,
 	Details,
 	MessagingContainer,
+	Feedback,
 	Controls,
 	Dropdown,
 	Header,
@@ -168,15 +169,15 @@ export default function Dashboard() {
 
 	const renderMessages = () => {
 		if (isMessagesLoading) {
-			return <div>Loading messages...</div>
+			return <MessagingContainer><Feedback>Loading messages...</Feedback></MessagingContainer>
 		}
 
 		if (isError) {
-			return <div>Error loading messages. Please try again later.</div>
+			return <MessagingContainer><Feedback>Error loading messages. Please try again later.</Feedback></MessagingContainer>
 		}
 
 		if (!messages || messages.length === 0) {
-			return <div>No messages to display.</div>
+			return <MessagingContainer><Feedback>No messages to display.</Feedback></MessagingContainer>
 		}
 		
 		return (

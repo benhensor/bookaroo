@@ -50,6 +50,14 @@ export const MessagingContainer = styled.div`
 	}
 `
 
+export const Feedback = styled.p`
+	margin: 0 var(--lg);
+	background-color: var(--creamA);
+	padding: var(--md);
+	color: var(--mdBrown);
+	text-align: center;
+`
+
 export const Controls = styled.div`
 	width: 100%;
 	display: flex;
