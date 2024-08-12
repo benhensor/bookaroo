@@ -90,6 +90,9 @@ export const MenuItem = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	&:first-child {
+		margin-bottom: var(--sm);
+	}
 `
 
 export const Notification = styled.div`

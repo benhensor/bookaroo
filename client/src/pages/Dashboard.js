@@ -181,13 +181,19 @@ export default function Dashboard() {
 		
 		return (
 			<MessagingContainer>
-				{messages.map((message) => (
+				{messages.map((message, i) => (
 					<div key={message.id}>
+						{i === 0 && <hr />}
 						<Message
 							message={message}
 							isOpen={openMessage === message.id}
 							onToggle={() => toggleMessage(message.id)}
 						/>
+						{messages.length > 1 ? (
+							<hr />
+						) : (
+							''
+						)}
 					</div>
 				))}
 			</MessagingContainer>

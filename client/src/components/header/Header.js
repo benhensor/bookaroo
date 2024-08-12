@@ -23,6 +23,7 @@ export default function Header() {
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 	const [isOpen, setIsOpen] = useState(false)
+	const unreadMessagesCount = messages?.filter(message => !message.isRead).length || 0
 
 
 	const toggleMenu = useCallback(() => {
@@ -64,9 +65,12 @@ export default function Header() {
 		{isOpen && (
 			<UserMenu $isActive={isOpen}>
 				<MenuItem>
+					{user.username}
+				</MenuItem>
+				<MenuItem>
 					<Button type="word" text="Messages" onClick={handleEditProfile} />
-					{messages?.length > 0 &&
-						<Notification>{messages?.length}</Notification>}
+					{unreadMessagesCount > 0 &&
+						<Notification>{unreadMessagesCount}</Notification>}
 				</MenuItem>
 				<MenuItem>
 					<Button type="word" text="Edit Profile" onClick={handleEditProfile} />

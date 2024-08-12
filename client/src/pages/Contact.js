@@ -38,9 +38,9 @@ export default function Contact() {
 				} = formatDate(messageData.createdAt)
 
 				setMessage(
-						`\nOn ${dayName} ${dayNumber}${daySuffix} ${monthName} ${year} ${
+						`On ${dayName} ${dayNumber}${daySuffix} ${monthName} ${year} ${
 								messageData.sender.username
-						} wrote:\n${messageData.message}\n`
+						} wrote:\n\n${messageData.message}\n`
 				)
 		}
 	}, [messageData])

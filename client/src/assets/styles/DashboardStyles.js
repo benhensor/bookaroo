@@ -41,11 +41,13 @@ export const MessagingContainer = styled.div`
 	border: 1px solid var(--ltGreen);
 	display: flex;
 	flex-direction: column;
-	gap: var(--sm);
 	padding: var(--lg) 0;
-
 	overflow: hidden;
 	overflow-y: auto;
+	hr {
+		margin: 0 var(--md);
+		border: 1px solid var(--ltGreenHover);
+	}
 `
 
 export const Controls = styled.div`

@@ -7,7 +7,6 @@ export const MessageContainer = styled.div`
 		font-family: 'Roboto', sans-serif;
 		font-size: 1.4rem;
 	}
-  
 `
 
 export const StyledMessage = styled.div`
