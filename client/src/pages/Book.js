@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useBooks } from '../context/BooksContext'
@@ -8,22 +7,34 @@ import axios from 'axios'
 import Button from '../components/buttons/Button'
 import { useWindowWidth } from '../utils/useWindowWidth'
 import { PageHeader } from '../assets/styles/GlobalStyles'
+import {
+	Row,
+	Category,
+	BookDetailsContainer,
+	BookPreview,
+	BookCover,
+	BookInfoContainer,
+	Title,
+	Subtitle,
+	BookInfo,
+	OwnersNotes,
+	ButtonContainer,
+	BookDescription,
+} from '../assets/styles/BookStyles'
+
+
 
 export default function Book() {
 	const navigate = useNavigate()
 	const { user } = useAuth()
-	const { currentBook, clearCurrentBook } = useBooks()
 	const { deleteListing } = useUser()
+	const { book, bookOwner } = useBooks()
 	const [bookDescription, setBookDescription] = useState(null)
 	const windowSize = useWindowWidth()
 
-	const book = currentBook?.[0]
-	const bookOwner = currentBook?.[1]
 
 	useEffect(() => {
-		if (!book || !bookOwner) {
-			
-		}
+		console.log('Book:', book, 'Book Owner:', bookOwner)
 	}, [book, bookOwner])
 
 	useEffect(() => {
@@ -43,19 +54,24 @@ export default function Book() {
 		}
 	}, [book])
 
-	const handleBackClick = () => {
-		clearCurrentBook()
-		navigate(-1)
-	}
+
+
+	const handleBackClick = () => navigate(-1)
 
 	const handleContactClick = () => navigate('/contact')
+
+
 
 	const handleDeleteClick = () => {
 		deleteListing(book.id)
 		navigate('/dashboard')
 	}
 
+
+
 	if (!book || !bookOwner) return null
+
+
 
 	return (
 		<section>
@@ -118,127 +134,3 @@ export default function Book() {
 		</section>
 	)
 }
-
-// Styled components
-const Title = styled.h1`
-	font-size: clamp(2rem, 3vw, 3.2rem);
-	color: var(--dkGreen);
-`
-
-const Subtitle = styled.p`
-	font-family: 'Roboto', sans-serif;
-	font-size: clamp(1.6rem, 2vw, 2rem);
-	span {
-		font-weight: 700;
-		color: var(--mdBrown);
-	}
-`
-
-const Row = styled.div`
-	display: flex;
-	width: 100%;
-`
-
-const BookDetailsContainer = styled.div`
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: var(--lg);
-	width: 100%;
-
-	@media only screen and (max-width: 768px) {
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: var(--lg);
-	}
-`
-
-const BookInfoContainer = styled.div`
-	width: 50%;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	gap: var(--xs);
-	font-size: 1.4rem;
-
-	@media only screen and (max-width: 768px) {
-		width: 100%;
-	}
-`
-
-const BookInfo = styled.div`
-	font-family: 'Roboto', sans-serif;
-	color: var(--bgGreenB);
-`
-
-const Category = styled.div`
-	font-size: 1.2rem;
-	margin-bottom: var(--sm);
-	font-family: 'Roboto', sans-serif;
-	color: var(--dkGreenA);
-
-	.divide {
-		color: var(--ltBrown);
-	}
-`
-
-const BookPreview = styled.div`
-	width: 50%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-
-	@media only screen and (max-width: 768px) {
-		width: 100%;
-	}
-`
-
-const BookCover = styled.img`
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border: 1px solid var(--ltGreen);
-	max-width: 260px;
-`
-
-const BookDescription = styled.div`
-	margin-bottom: var(--xl);
-	border: 1px solid var(--ltGreen);
-	padding: var(--lg);
-	width: 100%;
-
-	h3 {
-		font-size: clamp(1.6rem, 2vw, 2rem);
-		color: var(--mdBrown);
-		margin-bottom: var(--lg);
-	}
-
-	p {
-		font-size: clamp(1.2rem, 2vw, 1.4rem);
-	}
-`
-
-const OwnersNotes = styled.div`
-	display: flex;
-	flex-direction: column;
-	border: 1px solid var(--ltGreen);
-	padding: var(--lg);
-
-	h3 {
-		font-size: clamp(1.6rem, 2vw, 2rem);
-		color: var(--mdBrown);
-		margin-bottom: var(--lg);
-	}
-
-	span {
-		color: var(--dkGreen);
-	}
-
-	blockquote {
-		font-style: italic;
-	}
-`
-
-const ButtonContainer = styled.div`
-	margin-top: var(--md);
-`

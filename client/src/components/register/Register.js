@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import styled from 'styled-components'
 import Button from '../buttons/Button'
 import { Content } from '../../assets/styles/GlobalStyles'
+import { P, InputGroup } from '../../assets/styles/RegisterStyles'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -146,13 +146,3 @@ const Register = () => {
 }
 
 export default Register
-
-const P = styled.p`
-	margin-top: var(--sm);
-`
-
-const InputGroup = styled.div`
-	display: flex;
-	flex-direction: column;
-	margin-bottom: var(--sm);
-`

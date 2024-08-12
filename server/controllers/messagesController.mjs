@@ -1,15 +1,14 @@
 import Message from '../models/Message.mjs'
 import User from '../models/User.mjs'
 import Book from '../models/Book.mjs'
-import { Op } from 'sequelize'
 
-export const getAllMessages = async (req, res) => {
+export const getUsersMessages = async (req, res) => {
 	try {
 		const userId = req.user.id
 
 		const messages = await Message.findAll({
 			where: {
-				[Op.or]: [{ senderId: userId }, { recipientId: userId }],
+				recipientId: userId,
 			},
 			include: [
 				{
@@ -25,7 +24,59 @@ export const getAllMessages = async (req, res) => {
 				{
 					model: Book,
 					as: 'book',
-					attributes: ['title', 'author'],
+					attributes: [
+						'id',
+						'isbn',
+						'coverImg',
+						'title', 
+						'author',
+						'publisher',
+						'publishedDate',
+						'category',
+						'condition',
+						'notes',
+					],
+				},
+			],
+			order: [['createdAt', 'DESC']], // Sort messages by creation date, newest first
+		})
+
+		res.status(200).json(messages)
+	} catch (error) {
+		console.error('Error fetching all messages:', error)
+		res.status(500).json({ error: 'Internal server error' })
+	}
+}
+
+export const getAllMessages = async (req, res) => {
+	try {
+		const messages = await Message.findAll({
+			include: [
+				{
+					model: User,
+					as: 'sender',
+					attributes: ['username', 'email'],
+				},
+				{
+					model: User,
+					as: 'recipient',
+					attributes: ['username', 'email'],
+				},
+				{
+					model: Book,
+					as: 'book',
+					attributes: [
+						'id',
+						'isbn',
+						'coverImg',
+						'title',
+						'author',
+						'publisher',
+						'publishedDate',
+						'category',
+						'condition',
+						'notes',
+					],
 				},
 			],
 			order: [['createdAt', 'DESC']], // Sort messages by creation date, newest first
@@ -47,6 +98,7 @@ export const sendMessage = async (req, res) => {
 		const recipient = await User.findByPk(recipientId)
 		const book = await Book.findByPk(bookId)
 
+
 		if (!sender || !recipient || !book) {
 			return res
 				.status(400)
@@ -60,7 +112,7 @@ export const sendMessage = async (req, res) => {
 			message,
 			isRead: false,
 		})
-
+		console.log('New message:', newMessage)
 		res.status(201).json(newMessage)
 	} catch (error) {
 		console.error('Error sending message:', error)

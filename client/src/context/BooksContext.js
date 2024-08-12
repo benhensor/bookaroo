@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useMemo, useEffect } from 'react'
+import React, { createContext, useState, useCallback, useMemo } from 'react'
 import { useAuth } from './AuthContext'
 import axios from 'axios'
 import { useQuery } from 'react-query'
@@ -7,7 +7,8 @@ const BooksContext = createContext()
 
 export const BooksProvider = ({ children }) => {
 	const { user, isAuthenticated, searchUsers } = useAuth()
-	const [currentBook, setCurrentBook] = useState([])
+	const [book, setBook] = useState(null)
+	const [bookOwner, setBookOwner] = useState(null)
 
 	// Fetch books and user details
 	const fetchBooks = async () => {
@@ -66,43 +67,11 @@ export const BooksProvider = ({ children }) => {
 	)
 
 
-
-
-	// Function to set the currently selected book in state
+	const getBookById = useCallback(
+		(id) => books.find((book) => book.id === id),
+		[books]
+	)
 	
-	const selectCurrentBook = useCallback((book) => {
-		//console.log('book', book)
-		setCurrentBook(book)
-	}, [])
-
-	const clearCurrentBook = useCallback(() => {
-		setCurrentBook(null)
-	}, [])
-
-	// useEffect(() => {
-	// 	console.log('book', currentBook)
-	// }, [currentBook])
-
-
-
-	// Function to search for books
-	// const searchBooks = useCallback(async (query) => {
-	// 	// console.log('Query:', query)
-	//   if (!query.trim()) return // Don't search if the query is empty
-
-	//   const token = sessionStorage.getItem('authToken')
-	//   const { data } = await axios.get(
-	//     `${process.env.REACT_APP_API_URL}/api/books/search`,
-	//     {
-	//       headers: {
-	//         Authorization: `Bearer ${token}`,
-	//       },
-	//       params: { query },
-	//     }
-	//   )
-
-	//   return data.sort(() => Math.random() - 0.5)
-	// }, [])
 
 	// Function to search for books locally
 	const searchBooks = useCallback(
@@ -125,12 +94,14 @@ export const BooksProvider = ({ children }) => {
 	return (
 		<BooksContext.Provider
 			value={{
+				book,
 				books,
-				userBooks,
+				bookOwner,
 				recommendations,
-				currentBook,
-				selectCurrentBook,
-				clearCurrentBook,
+				userBooks,
+				setBook,
+				setBookOwner,
+				getBookById,
 				searchBooks,
 				refetchBooks: refetch, // Use `refetch` to manually refetch books
 				loading: isLoading,

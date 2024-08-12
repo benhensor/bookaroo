@@ -72,21 +72,17 @@ const GlobalStyles = createGlobalStyle`
   }
 
   main {
-    margin-top: 6.4rem;
+    position: fixed;
+    top: 5.8rem;
+    width: 100%;
+    outline: 1px solid red;
+    height: 100%;
+    overflow-y: auto;
   }
 
   section {
     max-width: 100rem;
     margin: 0 auto;
-    padding: var(--sm) 0;
-  }
-
-  button {
-    border: none;
-    border-radius: var(--xs);
-    padding: var(--sm) var(--md);
-    cursor: pointer;
-    transition: var(--fast);
   }
 
   form {
@@ -158,6 +154,7 @@ export const PageHeader = styled.div`
 	align-items: center;
 	margin: 0 auto;
 	position: relative;
+  padding-top: var(--lg);
 `
 
 export const Content = styled.div`

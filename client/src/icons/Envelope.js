@@ -1,10 +1,7 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 export default function Envelope({ isRead }) {
-	useEffect(() => {
-		console.log('isRead:', isRead)
-	}, [isRead])
 
 	return (
 		<EnvelopeIcon $isRead={isRead}>

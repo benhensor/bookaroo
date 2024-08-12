@@ -1,17 +1,14 @@
 import React from 'react'
-import styled from 'styled-components'
 import { useAuth } from '../../context/AuthContext'
 import { useBooks } from '../../context/BooksContext'
 import Carousel from '../carousel/Carousel'
+import { GalleryContainer, CarouselWrapper } from '../../assets/styles/BooksGalleryStyles'
 
 export default function BooksGallery() {
   
   const { user } = useAuth()
   const { books } = useBooks()
 
-  // console.log(books)
-
-  // Remove users listings from books array
   const booksFiltered = books.filter((book) => book.userId !== user.id)
 
   // Get unique categories from the books array
@@ -42,20 +39,9 @@ export default function BooksGallery() {
     <GalleryContainer>
       {uniqueCategories.map((category) => (
         <CarouselWrapper key={category}>
-          <Carousel title={category} items={getBooksByCategory(category)} />
+          <Carousel title={category} books={getBooksByCategory(category)} />
         </CarouselWrapper>
       ))}
     </GalleryContainer>
   )
 }
-
-const GalleryContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`
-
-const CarouselWrapper = styled.div`
-  width: 100%;
-  margin-bottom: var(--lg);
-`

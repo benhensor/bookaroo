@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { useWindowWidth } from '../../utils/useWindowWidth'
-import Book from '../books/Thumbnail'
+import Thumbnail from '../books/Thumbnail'
 import Chevron from '../../icons/Chevron'
 
-export default function Carousel({ items, title }) {
+export default function Carousel({ books, title }) {
   const [currentIndex, setCurrentIndex] = useState(0)
 	const [leftChevronVisible, setLeftChevronVisible] = useState(false)
   const [rightChevronVisible, setRightChevronVisible] = useState(false)
@@ -12,38 +12,38 @@ export default function Carousel({ items, title }) {
 
 	const windowWidth = useWindowWidth()
 	
-	const getItemsPerPage = () => {
+	const getbooksPerPage = () => {
 		if (windowWidth <= 679) return 2
 		if (windowWidth <= 849) return 3
 		if (windowWidth <= 999) return 4
 		return 5
 	}
 
-  // console.log('items:', title, items)
+  // console.log('books:', title, books)
 
-	const itemsPerPage = getItemsPerPage()
+	const booksPerPage = getbooksPerPage()
 
 
 
-  const uniqueItems = useMemo(() => {
+  const uniquebooks = useMemo(() => {
     const seen = new Set();
-    return items.filter(item => {
-      if (seen.has(item.id)) {
+    return books.filter(book => {
+      if (seen.has(book.id)) {
         return false;
       }
-      seen.add(item.id);
+      seen.add(book.id);
       return true;
     });
-  }, [items]);
+  }, [books]);
 
 
 
   useEffect(() => {
     setCurrentIndex(0)
-    if (items.length === 0) {
+    if (books.length === 0) {
       setMessage('No books found')
     }
-  }, [items])
+  }, [books])
 
 
 
@@ -52,20 +52,20 @@ export default function Carousel({ items, title }) {
   // }, [message])
   // useEffect(() => {
   //   if (title === 'Liked Books') {
-  //     console.log('liked carousel', items)
+  //     console.log('liked carousel', books)
   //   }
-  // }, [title, items])
+  // }, [title, books])
 
 
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) => Math.min(prevIndex + itemsPerPage, items.length - itemsPerPage))
+    setCurrentIndex((prevIndex) => Math.min(prevIndex + booksPerPage, books.length - booksPerPage))
   }
 
 
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => Math.max(prevIndex - itemsPerPage, 0))
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - booksPerPage, 0))
   }
 
 
@@ -83,28 +83,28 @@ export default function Carousel({ items, title }) {
 
 	useEffect(() => {
     setLeftChevronVisible(currentIndex > 0)
-    setRightChevronVisible(currentIndex + itemsPerPage < items.length)
-  }, [currentIndex, items.length, itemsPerPage])
+    setRightChevronVisible(currentIndex + booksPerPage < books.length)
+  }, [currentIndex, books.length, booksPerPage])
 
 
 
 	useEffect(() => {
 		setCurrentIndex((prevIndex) => {
-			const maxIndex = items.length - itemsPerPage
+			const maxIndex = books.length - booksPerPage
 			return Math.min(prevIndex, maxIndex)
 		})
-	}, [items.length, itemsPerPage])
+	}, [books.length, booksPerPage])
 
 
 
   // Debugging
   // useEffect(() => {
-  //   console.log(title, items)
-  // }, [title, items])
+  //   console.log(title, books[0])
+  // }, [title, books])
 
 
 
-  const isEmpty = uniqueItems.length === 0
+  const isEmpty = uniquebooks.length === 0
 
 
   return (
@@ -125,10 +125,10 @@ export default function Carousel({ items, title }) {
             </ChevronContainer>
 
             <BooksViewport>
-              <BooksWrapper $offset={currentIndex / itemsPerPage}>
-                {uniqueItems.map((item) => (
-                  <BookPreview key={item.id}>
-                    <Book book={item} />
+              <BooksWrapper $offset={currentIndex / booksPerPage}>
+                {uniquebooks.map((book) => (
+                  <BookPreview key={book.id}>
+                    <Thumbnail book={book} />
                   </BookPreview>
                 ))}
               </BooksWrapper>

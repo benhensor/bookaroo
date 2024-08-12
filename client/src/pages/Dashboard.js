@@ -1,25 +1,33 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
-import { useBooks } from '../../context/BooksContext'
-import { useUser } from '../../context/UserContext'
-import { useMessages } from '../../context/MessagesContext'
-import styled from 'styled-components'
-import { categories } from '../../utils/categories'
-import CollapsibleItem from './CollapsibleItem'
-import Genre from './Genre'
-import Message from '../message/Message'
-import Carousel from '../carousel/Carousel'
-import Button from '../buttons/Button'
-import Arrow from '../../icons/Arrow'
+import { useAuth } from '../context/AuthContext'
+import { useBooks } from '../context/BooksContext'
+import { useUser } from '../context/UserContext'
+import { useMessages } from '../context/MessagesContext'
+import { categories } from '../utils/categories'
+import CollapsibleItem from '../components/dashboard/CollapsibleItem'
+import Genre from '../components/dashboard/Genre'
+import Message from '../components/message/Message'
+import Carousel from '../components/carousel/Carousel'
+import Button from '../components/buttons/Button'
+import {
+	Container,
+	DashboardHeader,
+	Details,
+	MessagingContainer,
+	Controls,
+	Dropdown,
+	Header,
+	CarouselContainer,
+} from '../assets/styles/DashboardStyles'
+
+
 
 export default function Dashboard() {
-	const navigate = useNavigate()
 	const { user, isLoading, updateUserPreferences, updateUserDetails } =
 		useAuth()
 	const { userBooks, recommendations, loading } = useBooks()
 	const { likedBooks, likedBooksLoading } = useUser()
-	const { messages, markAsRead } = useMessages()
+	const { messages, isMessagesLoading, isError, markAsRead, refreshMessages } = useMessages()
 	const [activeDropdown, setActiveDropdown] = useState(false)
 	const [selectedPreferences, setSelectedPreferences] = useState([])
 	const [openMessage, setOpenMessage] = useState(null)
@@ -38,7 +46,11 @@ export default function Dashboard() {
 		postcode: '',
 	})
 
-	// console.log('User:', messages) // Debugging log
+	useEffect(() => {
+		if (user) {
+			refreshMessages()
+		}
+	}, [user, refreshMessages])
 
 	useEffect(() => {
 		if (user) {
@@ -66,14 +78,8 @@ export default function Dashboard() {
 	const handleSaveUserDetails = useCallback(() => {
 		if (!user) return
 
-		const {
-			username,
-			email,
-			phone,
-			addressLine1,
-			city,
-			postcode,
-		} = formValues
+		const { username, email, phone, addressLine1, city, postcode } =
+			formValues
 
 		if (
 			!username ||
@@ -108,7 +114,6 @@ export default function Dashboard() {
 	}
 
 	const handleSavePreferences = useCallback(() => {
-		// console.log('handleSavePreferences called') // Debugging log
 
 		if (!user) {
 			console.log('No user found') // Debugging log
@@ -116,25 +121,19 @@ export default function Dashboard() {
 			return
 		}
 
-		// console.log('User:', user) // Debugging log
-		const currentPreferences = user.preferences || [] // Treat undefined preferences as an empty array
-
-		// console.log('Current preferences:', currentPreferences) // Debugging log
-		// console.log('Selected preferences:', selectedPreferences) // Debugging log
+		const currentPreferences = user.preferences || [] 
 
 		const preferencesChanged =
 			JSON.stringify(selectedPreferences) !==
 			JSON.stringify(currentPreferences)
 
 		if (!preferencesChanged) {
-			// console.log('Preferences have not changed') // Debugging log
 			setActiveDropdown(false)
 			return
 		}
 
 		updateUserPreferences(selectedPreferences)
 			.then(() => {
-				// console.log('Preferences saved successfully') // Debugging log
 				setActiveDropdown(false)
 			})
 			.catch((error) => {
@@ -151,24 +150,53 @@ export default function Dashboard() {
 	}
 
 	const toggleMessage = (messageId) => {
-		//console.log('messageId:', messageId) // Debugging log
 		markAsRead(messageId)
 		setOpenMessage(openMessage === messageId ? null : messageId)
 	}
 
-	const renderCarousel = (items, title, loading) => {
+	const renderCarousel = (books, title, loading) => {
 		if (loading) {
 			return <CarouselContainer>Loading...</CarouselContainer>
 		}
 
 		return (
 			<CarouselContainer>
-				<Carousel items={items} title={title} />
+				<Carousel books={books} title={title} />
 			</CarouselContainer>
 		)
 	}
 
-	if (isLoading) {
+	const renderMessages = () => {
+		if (isMessagesLoading) {
+			return <div>Loading messages...</div>
+		}
+
+		if (isError) {
+			return <div>Error loading messages. Please try again later.</div>
+		}
+
+		if (!messages || messages.length === 0) {
+			return <div>No messages to display.</div>
+		}
+		
+		return (
+			<MessagingContainer>
+				{messages.map((message) => (
+					<div key={message.id}>
+						<Message
+							message={message}
+							isOpen={openMessage === message.id}
+							onToggle={() => toggleMessage(message.id)}
+						/>
+					</div>
+				))}
+			</MessagingContainer>
+		)
+	}
+	
+	const unreadMessagesCount = messages?.filter(message => !message.isRead).length || 0
+	
+	if (isLoading || isMessagesLoading) {
 		return (
 			<section>
 				<div>Loading...</div>
@@ -350,11 +378,24 @@ export default function Dashboard() {
 							isActive={activeDropdown === 'messages'}
 							text={
 								<p>
-									You have&nbsp;<span>{messages?.length}</span>
-									&nbsp;
-									{messages?.length === 1
-										? 'message'
-										: 'messages'}
+									{isMessagesLoading ? (
+										'Loading messages...'
+									) : isError ? (
+										'Error loading messages'
+									) : (
+										<>
+											You have&nbsp;
+											{unreadMessagesCount === 0 ? (
+												'no'
+												) : (
+												<span>{unreadMessagesCount}</span>
+											)}
+											&nbsp;unread&nbsp;
+											{unreadMessagesCount === 1
+												? 'message'
+												: 'messages'}
+										</>
+									)}
 								</p>
 							}
 						/>
@@ -373,18 +414,7 @@ export default function Dashboard() {
 					$boxShadow="none"
 					$border="none"
 				>
-					<MessagingContainer>
-						{messages.map((message) => (
-							<div key={message.id}>
-							<Message
-								message={message}
-								isOpen={openMessage === message.id}
-								onToggle={() => toggleMessage(message.id)}
-							/>
-
-							</div>
-						))}
-					</MessagingContainer>
+					{renderMessages()}
 				</Dropdown>
 			</Container>
 
@@ -407,106 +437,3 @@ export default function Dashboard() {
 		</section>
 	)
 }
-
-const DashboardHeader = styled.div`
-	display: flex;
-	flex-direction: column;
-`
-
-const Container = styled.div`
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	gap: var(--sm);
-	margin-bottom: var(--lg);
-	@media only screen and (max-width: 768px) {
-		flex-direction: column;
-	}
-`
-
-const Details = styled.div`
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	border: 1px solid var(--ltGreen);
-	padding: var(--lg);
-	p {
-		display: flex;
-		align-items: center;
-		&:last-child {
-			margin-bottom: 0;
-		}
-	}
-	span {
-		color: var(--dkGreen);
-		font-weight: bold;
-	}
-`
-
-const MessagingContainer = styled.div`
-	border: 1px solid var(--ltGreen);
-	display: flex;
-	flex-direction: column;
-	gap: var(--sm);
-	padding: var(--lg) 0;
-	
-	overflow: hidden;
-	overflow-y: auto;
-`
-
-const Controls = styled.div`
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	gap: var(--xs);
-	margin: var(--sm) 0 0 0;
-	button {
-		color: var(--dkGreen);
-		font-size: 1.6rem;
-		text-align: left;
-		padding: 0;
-		border-radius: 0;
-		background: none;
-	}
-`
-
-const Header = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding-bottom: var(--sm);
-	border-bottom: 1px solid var(--ltGreen);
-`
-
-const Dropdown = styled.div`
-	position: ${({ $position }) => $position};
-	top: ${({ $top }) => $top};
-	left: ${({ $left }) => $left};
-	transform: ${({ $transform }) => $transform};
-	width: ${({ $width }) => $width};
-	z-index: ${({ $isClicked }) => ($isClicked ? '1000' : '-1')};
-	overflow: hidden;
-	max-height: ${({ $isClicked }) =>
-		$isClicked
-			? 'auto'
-			: '0'}; /* Set a reasonable max-height for the open state */
-	opacity: ${({ $isClicked }) => ($isClicked ? '1' : '0')};
-	padding: ${({ $padding }) => $padding};
-	box-shadow: ${({ $boxShadow }) => $boxShadow};
-	display: flex;
-	flex-direction: column;
-	margin-top: var(--lg);
-	border: ${({ $border }) => $border};
-	border-radius: var(--xs);
-	background: #fff;
-	transition: all 2s ease, opacity 0.3s ease, padding 0.3s ease;
-	@media only screen and (max-width: 450px) {
-		width: 100%;
-		border-radius: 0;
-	}
-`
-
-const CarouselContainer = styled.div`
-	position: relative;
-`
