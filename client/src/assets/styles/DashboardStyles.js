@@ -3,6 +3,7 @@ import styled from 'styled-components';
 export const DashboardHeader = styled.div`
 	display: flex;
 	flex-direction: column;
+	padding-top: var(--lg);
 `
 
 export const Container = styled.div`

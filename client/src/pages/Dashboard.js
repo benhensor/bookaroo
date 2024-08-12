@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import { useBooks } from '../../context/BooksContext'
-import { useUser } from '../../context/UserContext'
-import { useMessages } from '../../context/MessagesContext'
-import { categories } from '../../utils/categories'
-import CollapsibleItem from './CollapsibleItem'
-import Genre from './Genre'
-import Message from '../message/Message'
-import Carousel from '../carousel/Carousel'
-import Button from '../buttons/Button'
+import { useAuth } from '../context/AuthContext'
+import { useBooks } from '../context/BooksContext'
+import { useUser } from '../context/UserContext'
+import { useMessages } from '../context/MessagesContext'
+import { categories } from '../utils/categories'
+import CollapsibleItem from '../components/dashboard/CollapsibleItem'
+import Genre from '../components/dashboard/Genre'
+import Message from '../components/message/Message'
+import Carousel from '../components/carousel/Carousel'
+import Button from '../components/buttons/Button'
 import {
 	Container,
 	DashboardHeader,
@@ -18,7 +18,7 @@ import {
 	Dropdown,
 	Header,
 	CarouselContainer,
-} from '../../assets/styles/DashboardStyles'
+} from '../assets/styles/DashboardStyles'
 
 
 
@@ -154,14 +154,14 @@ export default function Dashboard() {
 		setOpenMessage(openMessage === messageId ? null : messageId)
 	}
 
-	const renderCarousel = (items, title, loading) => {
+	const renderCarousel = (books, title, loading) => {
 		if (loading) {
 			return <CarouselContainer>Loading...</CarouselContainer>
 		}
 
 		return (
 			<CarouselContainer>
-				<Carousel items={items} title={title} />
+				<Carousel books={books} title={title} />
 			</CarouselContainer>
 		)
 	}
@@ -178,7 +178,7 @@ export default function Dashboard() {
 		if (!messages || messages.length === 0) {
 			return <div>No messages to display.</div>
 		}
-
+		
 		return (
 			<MessagingContainer>
 				{messages.map((message) => (
@@ -193,7 +193,9 @@ export default function Dashboard() {
 			</MessagingContainer>
 		)
 	}
-
+	
+	const unreadMessagesCount = messages?.filter(message => !message.isRead).length || 0
+	
 	if (isLoading || isMessagesLoading) {
 		return (
 			<section>
@@ -383,13 +385,13 @@ export default function Dashboard() {
 									) : (
 										<>
 											You have&nbsp;
-											{messages?.length === 0 ? (
+											{unreadMessagesCount === 0 ? (
 												'no'
 												) : (
-												<span>{messages?.length}</span>
+												<span>{unreadMessagesCount}</span>
 											)}
-											&nbsp;
-											{messages?.length === 1
+											&nbsp;unread&nbsp;
+											{unreadMessagesCount === 1
 												? 'message'
 												: 'messages'}
 										</>

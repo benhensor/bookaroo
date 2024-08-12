@@ -26,6 +26,7 @@ export default function Contact() {
 	const messageData = useMemo(() => location.state?.message || {}, [location.state?.message])
 
 
+
 	useEffect(() => {
 		if (messageData?.createdAt && messageData.sender?.username) {
 				const {
@@ -44,11 +45,6 @@ export default function Contact() {
 		}
 	}, [messageData])
 
-	useEffect(() => {
-		console.log(messageData)
-		console.log(location.state)
-		console.log('Book:', book, 'Book Owner:', bookOwner)
-	}, [location.state, messageData, book, bookOwner])
 
 
 	const handleSubmit = async (e) => {
@@ -57,16 +53,25 @@ export default function Contact() {
 			console.error('Book or book owner is not set');
 			return;
 		}
-		const messageData = {
+	
+		// Determine the recipient of the message
+		const recipientId = messageData?.senderId && messageData.senderId !== user.id ? messageData.senderId : book.userId
+		const subjectLine = `Regarding: ${book.title} by ${book.author}`
+
+		if (!recipientId) {
+			console.error('Recipient ID not found')
+			return
+		}
+
+		const newMessageData = {
 			senderId: user.id,
-			recipientId: book.userId,
+			recipientId: recipientId,
 			bookId: book.id,
-			message: message,
+			message: `${subjectLine}\n\n${message}`,
 			isRead: false,
 		}
-		console.log('Sending message:', messageData)
 		try {
-			await sendMessage(messageData)
+			await sendMessage(newMessageData)
 			setBook(null)
 			setBookOwner(null)
 			navigate('/dashboard')
@@ -75,6 +80,8 @@ export default function Contact() {
 		}
 		
 	}
+
+
 
 	return (
 		<section>

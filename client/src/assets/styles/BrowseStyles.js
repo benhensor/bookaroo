@@ -7,7 +7,7 @@ export const Controls = styled.div`
 	max-height: 100%;
 	z-index: 100;
 	background-color: var(--white);
-	padding: var(--lg) 0;
+	padding-top: var(--lg);
 	box-shadow: ${(props) =>
 		props.$isScrolled ? '0 5px 5px rgba(0, 0, 0, 0.1)' : 'none'};
 	transition: var(--slow);

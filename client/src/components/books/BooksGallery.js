@@ -39,7 +39,7 @@ export default function BooksGallery() {
     <GalleryContainer>
       {uniqueCategories.map((category) => (
         <CarouselWrapper key={category}>
-          <Carousel title={category} items={getBooksByCategory(category)} />
+          <Carousel title={category} books={getBooksByCategory(category)} />
         </CarouselWrapper>
       ))}
     </GalleryContainer>

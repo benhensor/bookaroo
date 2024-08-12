@@ -11,7 +11,7 @@ export default function CollapsibleItem({ message, onClick, isActive, text, isRe
         <div>
           {message && <Envelope isRead={isRead} />}
           {text}
-          <Arrow isActive={isActive} />
+          <Arrow isActive={isActive} message={message} />
         </div>
       </Header>
       {isActive && <>{children}</>}

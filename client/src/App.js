@@ -17,7 +17,7 @@ import Browse from './pages/Browse'
 import Book from './pages/Book'
 import Login from './components/login/Login'
 import Register from './components/register/Register'
-import Dashboard from './components/dashboard/Dashboard'
+import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/protectedRoute/ProtectedRoute'
 
 const queryClient = new QueryClient()

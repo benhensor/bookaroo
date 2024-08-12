@@ -5,6 +5,9 @@ export const Head = styled.header`
 	border-bottom: 1px solid var(--greyGreen);
 	position: fixed;
 	top: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 100%;
 	height: 5.8rem;
 	z-index: 1000;
@@ -14,6 +17,7 @@ export const Container = styled.section`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	width: 100%;
 	position: relative;
 `
 
@@ -22,7 +26,7 @@ export const LogoContainer = styled.div`
 	align-items: center;
 	width: fit-content;
 	p {
-		font-size: clamp(2.5rem, 2.5vw, 4.5rem);
+		font-size: clamp(2.5rem, 5vw, 4.5rem);
 		letter-spacing: .1rem;
 		line-height: 1em;
 		font-weight: 700;

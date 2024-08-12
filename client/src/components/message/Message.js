@@ -1,15 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { useAuth } from '../../context/AuthContext'
+import React from 'react'
 import { useBooks } from '../../context/BooksContext'
 import { useMessages } from '../../context/MessagesContext'
 import CollapsibleItem from '../dashboard/CollapsibleItem'
 import Button from '../buttons/Button'
 import Trash from '../../icons/Trash'
+import {
+  MessageContainer,
+  StyledMessage,
+  MessageContent,
+  MessageBody,
+  MessageControls,
+} from '../../assets/styles/MessageStyles'
+
 
 export default function Message({ message, isOpen, onToggle }) {
 
-  const { searchUsers } = useAuth()
   const { setBook, setBookOwner, getBookById } = useBooks()
 	const { markAsUnread, deleteMessage } = useMessages()
 
@@ -83,58 +88,3 @@ export default function Message({ message, isOpen, onToggle }) {
 		</MessageContainer>
 	)
 }
-
-const MessageContainer = styled.div`
-  transition: var(--fast);
-	p {
-		font-family: 'Roboto', sans-serif;
-		font-size: 1.4rem;
-	}
-  
-`
-
-const StyledMessage = styled.div`
-  padding: var(--sm) var(--lg);
-  background-color: ${({ $isActive }) =>
-    $isActive ? 'var(--ltGreenHover)' : 'none'};
-  &:hover {
-    background-color: var(--ltGreenHover);
-  }
-`
-
-const MessageContent = styled.div`
-	border: 1px solid var(--ltGreen);
-	display: flex;
-  flex-direction: column;
-	justify-content: space-between;
-`
-
-const MessageBody = styled.div`
-	display: flex;
-	flex-direction: column;
-	gap: var(--sm);
-  padding: var(--lg);
-  background-color: var(--white);
-	p {
-		font-size: 1.4rem;
-		white-space: pre-wrap;
-		word-break: break-word;
-	}
-	span {
-		font-weight: bold;
-		color: var(--dkGreen);
-	}
-`
-
-const MessageControls = styled.div`
-  background-color: var(--dkGreenA);
-	display: flex;
-	justify-content: space-between;
-  align-items: center;
-	gap: var(--sm);
-  padding: 0 var(--lg);
-  div {
-    display: flex;
-    gap: var(--lg);
-  }
-`

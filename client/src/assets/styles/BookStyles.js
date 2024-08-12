@@ -40,9 +40,11 @@ export const BookInfoContainer = styled.div`
 	justify-content: space-between;
 	gap: var(--xs);
 	font-size: 1.4rem;
-
 	@media only screen and (max-width: 768px) {
 		width: 100%;
+		div {
+			margin-bottom: var(--sm);
+		}
 	}
 `
 
