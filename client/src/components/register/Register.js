@@ -37,7 +37,7 @@ const Register = () => {
 		try {
 			const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, formData)
 			console.log(res.data)
-      navigate('/dashboard')
+      navigate('/login')
 		} catch (error) {
 			console.error(error.response.data)
 		}
