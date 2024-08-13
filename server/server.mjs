@@ -24,6 +24,12 @@ app.use(cors(corsOptions))
 app.use(express.json())
 
 
+app.use((req, res, next) => {
+    console.log('CORS request from:', req.headers.origin);
+    next();
+});
+
+
 app.use('/api/auth', authRoutes)
 app.use('/api/books', bookRoutes)
 app.use('/api/users', userRoutes)
