@@ -13,7 +13,7 @@ dotenv.config()
 const app = express()
 
 const corsOptions = {
-	origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+	origin: process.env.FRONTEND_URL,
 	credentials: true,
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization']
@@ -23,17 +23,6 @@ console.log('CORS options:', corsOptions) // Debugging log
 
 app.use(cors(corsOptions))
 
-app.use((req, res, next) => {
-	console.log('Request from origin:', req.headers.origin) // Debugging log
-	console.log('CORS headers:', res.getHeaders()) // Debugging log
-	next()
-})
-
-app.use(cors({
-	origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-	credentials: true
-}))
-
 app.use(express.json())
 
 app.options('*', cors(corsOptions))
@@ -42,6 +31,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/books', bookRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/messages', messagesRoutes)
+
 
 sequelize.sync().then(() => {
 	app.listen(process.env.PORT, () => {
