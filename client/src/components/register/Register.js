@@ -35,7 +35,11 @@ const Register = () => {
 	const onSubmit = async (e) => {
 		e.preventDefault()
 		try {
-			const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, formData)
+			const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, formData, {
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			})
 			console.log(res.data)
       navigate('/login')
 		} catch (error) {
