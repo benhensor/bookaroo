@@ -46,7 +46,7 @@ const Register = () => {
 			console.error(error.response.data)
 		}
 	}
-
+ 
 	return (
 		<section>
       <Content>
