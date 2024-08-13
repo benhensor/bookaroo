@@ -2,7 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.mjs",
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "client/build"
+      }
+    },
+    {
+      "src": "server/server.mjs",
       "use": "@vercel/node"
     }
   ],
@@ -19,8 +26,12 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "server/server.mjs"
+    },
+    {
       "src": "/(.*)",
-      "dest": "server.mjs"
+      "dest": "/client/$1"
     }
   ]
 }
