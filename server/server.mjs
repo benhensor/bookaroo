@@ -55,10 +55,14 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 5000
 sequelize.sync().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-  })
+    console.log(`Server running on port ${PORT}`);
+  });
 }).catch(err => {
-  console.error('Unable to connect to the database:', err)
-})
+  console.error('Unable to connect to the database:', err);
+  // Start the server anyway, so it can serve routes that don't require the database
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} (without database)`);
+  });
+});
 
 export default app
