@@ -14,7 +14,7 @@ export const BooksProvider = ({ children }) => {
 	const fetchBooks = async () => {
 		const token = sessionStorage.getItem('authToken')
 		const { data } = await axios.get(
-			`${process.env.REACT_APP_API_URL}/api/books`,
+			`${process.env.REACT_APP_API_URL}/api/books/all`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
