@@ -68,7 +68,7 @@ export const UserProvider = ({ children }) => {
 		const token = sessionStorage.getItem('authToken')
 		try {
 			const response = await axios.get(
-				`${process.env.REACT_APP_API_URL}/api/books`,
+				`${process.env.REACT_APP_API_URL}/api/books/all`,
 				{
 					headers: { Authorization: `Bearer ${token}` },
 					params: { ids: user.likedBooks.join(',') }, // Assuming API accepts a comma-separated list of book IDs

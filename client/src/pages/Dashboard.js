@@ -182,6 +182,7 @@ export default function Dashboard() {
 		
 		return (
 			<MessagingContainer>
+				<h2>Messages</h2>
 				{messages.map((message, i) => (
 					<div key={message.id}>
 						{i === 0 && <hr />}
