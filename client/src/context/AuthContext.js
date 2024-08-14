@@ -50,21 +50,31 @@ export const AuthProvider = ({ children }) => {
 	// Wrap login and logout in useCallback to prevent unnecessary re-creations
 	const login = useCallback(
 		async (credentials) => {
-			// console.log('Login called'); // Debugging log
-			const response = await axios.post(
-				`${process.env.REACT_APP_API_URL}/api/auth/login`,
-				credentials
-			)
-			const { token, user } = response.data
+			try {
+				const response = await axios.post(
+					`${process.env.REACT_APP_API_URL}/api/auth/login`,
+					credentials,
+					{
+						withCredentials: true,
+						headers: {
+							'Content-Type': 'application/json',
+						}
+					}
+				)
+				const { token, user } = response.data
 
-			sessionStorage.setItem('authToken', token)
-			setUser(user)
-			setIsAuthenticated(true)
-			queryClient.invalidateQueries('currentUser') // refetch the user data
-			// console.log('Logged in successfully'); // Debugging log
-		},
-		[queryClient]
-	)
+				sessionStorage.setItem('authToken', token)
+				setUser(user)
+				setIsAuthenticated(true)
+				queryClient.invalidateQueries('currentUser') // refetch the user data
+				// console.log('Logged in successfully'); // Debugging log
+			} catch (error) {
+      console.error('Login error:', error.response ? error.response.data : error.message);
+      throw error;
+    }
+  },
+  [queryClient]
+);
 
 	const logout = useCallback(() => {
 		sessionStorage.removeItem('authToken')

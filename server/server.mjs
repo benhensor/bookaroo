@@ -13,7 +13,7 @@ dotenv.config()
 const app = express()
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'https://bookaroo-client.vercel.app',
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['X-CSRF-Token', 'X-Requested-With', 'Accept', 'Accept-Version', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'X-Api-Version', 'Authorization']

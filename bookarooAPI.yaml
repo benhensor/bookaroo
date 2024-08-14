@@ -1,0 +1,1462 @@
+openapi: 3.0.3
+info:
+  title: Bookaroo
+  version: 1.0.0
+  description: >-
+    A simple PERN application for connecting people for donating and exchanging
+    unwanted books.
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        isbn:
+          type: string
+          example: "9780141036137"
+        coverImg:
+          type: string
+          example: "https://example.com/images/greatgatsby.jpg"
+        title:
+          type: string
+          example: "The Great Gatsby"
+        author:
+          type: string
+          example: "F. Scott Fitzgerald"
+        publishedDate:
+          type: string
+          format: date
+          example: "1925-04-10"
+        publisher:
+          type: string
+          example: "Scribner"
+        category:
+          type: array
+          items:
+            type: string
+          example:
+            - "Classics"
+            - "Fiction"
+        condition:
+          type: string
+          example: "Good"
+        notes:
+          type: string
+          example: "Slightly worn cover."
+        userId:
+          type: integer
+          example: 1
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          example: johndoe@example.com
+        phone:
+          type: string
+          example: "+1234567890"
+        addressLine1:
+          type: string
+          example: "123 Main St"
+        addressLine2:
+          type: string
+          example: "Apt 4B"
+        city:
+          type: string
+          example: "New York"
+        postcode:
+          type: string
+          example: "10001"
+        latitude:
+          type: number
+          format: float
+          example: 40.7128
+        longitude:
+          type: number
+          format: float
+          example: -74.0060
+          
+    BookWithUser:
+      type: object
+      properties:
+        book:
+          $ref: '#/components/schemas/Book'
+        user:
+          $ref: '#/components/schemas/User'
+          
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        senderId:
+          type: integer
+          example: 1
+        recipientId:
+          type: integer
+          example: 2
+        bookId:
+          type: integer
+          example: 1
+        message:
+          type: string
+          example: "Is this book still available?"
+        isRead:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-08-14T12:34:56Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-08-14T12:34:56Z"
+        sender:
+          $ref: '#/components/schemas/User'
+        recipient:
+          $ref: '#/components/schemas/User'
+        book:
+          $ref: '#/components/schemas/Book'
+          
+paths:
+  /api/auth/register:
+    summary: Register a new user account.
+    description: >-
+      This path is used to create a new user entry in the users table with all
+      required fields.
+    post:
+      summary: Posts the new user data.
+      description: >-
+        Creates a new user object and posts to the backend for insertion into
+        the users table. 
+      operationId: post_register
+      tags:
+        - Auth
+      requestBody:
+        description: The new user data to be registered.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  format: password
+                  example: StrongPassword123!
+                phone:
+                  type: string
+                  example: "+1234567890"
+                addressLine1:
+                  type: string
+                  example: "123 Main St"
+                addressLine2:
+                  type: string
+                  example: "Apt 4B"
+                city:
+                  type: string
+                  example: "New York"
+                postcode:
+                  type: string
+                  example: "10001"
+              required:
+                - username
+                - email
+                - password
+                - phone
+                - addressLine1
+                - city
+                - postcode
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+        '400':
+          description: Bad request, possibly due to validation errors or geocoding failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input or geocoding error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Server encountered an unexpected condition"
+        default:
+          description: Default error sample response
+
+  /api/auth/login:
+    summary: Authenticate a user and return a JWT token.
+    description: >-
+      This endpoint is used to authenticate a user by their email and password. 
+      If the credentials are correct, a JWT token is returned along with the user object.
+    post:
+      summary: Logs in a user.
+      description: >-
+        Authenticates the user by checking the provided email and password. 
+        If the credentials are correct, returns a JWT token and user data.
+      operationId: post_login
+      tags:
+        - Auth
+      requestBody:
+        description: The user's login credentials.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  format: password
+                  example: StrongPassword123!
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      username:
+                        type: string
+                        example: johndoe
+                      email:
+                        type: string
+                        example: johndoe@example.com
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Server encountered an unexpected condition"
+        default:
+          description: Default error response
+  /api/users/current:
+    get:
+      summary: Get the current authenticated user.
+      description: >-
+        This endpoint retrieves the details of the currently authenticated user
+        based on the JWT token provided in the Authorization header.
+      operationId: getCurrentUser
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved current user data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  phone:
+                    type: string
+                    example: "+1234567890"
+                  addressLine1:
+                    type: string
+                    example: "123 Main St"
+                  addressLine2:
+                    type: string
+                    example: "Apt 4B"
+                  city:
+                    type: string
+                    example: "New York"
+                  postcode:
+                    type: string
+                    example: "10001"
+                  latitude:
+                    type: number
+                    format: float
+                    example: 40.7128
+                  longitude:
+                    type: number
+                    format: float
+                    example: -74.0060
+                  preferences:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "dark_mode"
+                      - "email_notifications"
+                  likedBooks:
+                    type: array
+                    items:
+                      type: integer
+                    example:
+                      - 1
+                      - 2
+        '400':
+          description: Bad request - User not authenticated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not authenticated"
+        '401':
+          description: Unauthorized - Invalid or missing token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized - Invalid or missing token"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/users/search:
+    get:
+      summary: Search for users by userId.
+      description: >-
+        Searches for users based on the provided userId. Returns user data such as username,
+        email, phone, and address.
+      operationId: searchUsers
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully retrieved user data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    username:
+                      type: string
+                      example: johndoe
+                    email:
+                      type: string
+                      example: johndoe@example.com
+                    phone:
+                      type: string
+                      example: "+1234567890"
+                    addressLine1:
+                      type: string
+                      example: "123 Main St"
+                    addressLine2:
+                      type: string
+                      example: "Apt 4B"
+                    city:
+                      type: string
+                      example: "New York"
+                    postcode:
+                      type: string
+                      example: "10001"
+                    latitude:
+                      type: number
+                      format: float
+                      example: 40.7128
+                    longitude:
+                      type: number
+                      format: float
+                      example: -74.0060
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/users/update:
+    put:
+      summary: Update the authenticated user's details.
+      description: >-
+        Updates the details of the currently authenticated user such as username,
+        email, phone, and address. Geocoding is used to validate and update the location.
+      operationId: updateUserDetails
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                phone:
+                  type: string
+                  example: "+1234567890"
+                addressLine1:
+                  type: string
+                  example: "123 Main St"
+                addressLine2:
+                  type: string
+                  example: "Apt 4B"
+                city:
+                  type: string
+                  example: "New York"
+                postcode:
+                  type: string
+                  example: "10001"
+              required:
+                - username
+                - email
+                - phone
+                - addressLine1
+                - city
+                - postcode
+      responses:
+        '200':
+          description: Successfully updated user details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  phone:
+                    type: string
+                    example: "+1234567890"
+                  addressLine1:
+                    type: string
+                    example: "123 Main St"
+                  addressLine2:
+                    type: string
+                    example: "Apt 4B"
+                  city:
+                    type: string
+                    example: "New York"
+                  postcode:
+                    type: string
+                    example: "10001"
+                  latitude:
+                    type: number
+                    format: float
+                    example: 40.7128
+                  longitude:
+                    type: number
+                    format: float
+                    example: -74.0060
+        '400':
+          description: Bad request - Missing required fields or invalid address.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields or invalid address, geocoding failed"
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/books/like:
+    post:
+      summary: Like a book for the authenticated user.
+      description: Adds a book to the authenticated user's list of liked books.
+      operationId: likeBook
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Book liked successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book liked successfully"
+                  likedBooks:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+        '400':
+          description: Bad request - Book is already liked.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book is already liked"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/books/unlike:
+    post:
+      summary: Unlike a book for the authenticated user.
+      description: Removes a book from the authenticated user's list of liked books.
+      operationId: unlikeBook
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Book unliked successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book unliked successfully"
+                  likedBooks:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1
+        '400':
+          description: Bad request - Book is not liked.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book is not liked"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/books/liked:
+    get:
+      summary: Get all liked books for the authenticated user.
+      description: Retrieves all books that the authenticated user has liked.
+      operationId: getLikedBooks
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved liked books.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    isbn:
+                      type: string
+                      example: "9780141036137"
+                    coverImg:
+                      type: string
+                      example: "https://example.com/images/greatgatsby.jpg"
+                    title:
+                      type: string
+                      example: "The Great Gatsby"
+                    author:
+                      type: string
+                      example: "F. Scott Fitzgerald"
+                    publishedDate:
+                      type: string
+                      format: date
+                      example: "1925-04-10"
+                    publisher:
+                      type: string
+                      example: "Scribner"
+                    category:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - "Classics"
+                        - "Fiction"
+                    condition:
+                      type: string
+                      example: "Good"
+                    notes:
+                      type: string
+                      example: "Slightly worn cover."
+                    userId:
+                      type: integer
+                      example: 1
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: johndoe
+                        email:
+                          type: string
+                          example: johndoe@example.com
+                        phone:
+                          type: string
+                          example: "+1234567890"
+                        addressLine1:
+                          type: string
+                          example: "123 Main St"
+                        addressLine2:
+                          type: string
+                          example: "Apt 4B"
+                        city:
+                          type: string
+                          example: "New York"
+                        postcode:
+                          type: string
+                          example: "10001"
+                        latitude:
+                          type: number
+                          format: float
+                          example: 40.7128
+                        longitude:
+                          type: number
+                          format: float
+                          example: -74.0060
+        '404':
+          description: User or liked books not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User or liked books not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+  /api/users/preferences:
+    put:
+      summary: Update the authenticated user's preferences.
+      description: Updates the preferences (literary genres) of the currently authenticated user.
+      operationId: updateUserPreferences
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preferences:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "Science Fiction"
+                    - "Fantasy"
+                    - "Mystery"
+                  description: An array of literary genres preferred by the user.
+      responses:
+        '200':
+          description: Successfully updated user preferences.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Preferences updated successfully"
+                  preferences:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "Science Fiction"
+                      - "Fantasy"
+                      - "Mystery"
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+  /api/books/list:
+    post:
+      summary: List a new book for the authenticated user.
+      description: Adds a new book to the user's list of books.
+      operationId: listBook
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isbn:
+                  type: string
+                  example: "9780141036137"
+                coverImg:
+                  type: string
+                  example: "https://example.com/images/greatgatsby.jpg"
+                title:
+                  type: string
+                  example: "The Great Gatsby"
+                author:
+                  type: string
+                  example: "F. Scott Fitzgerald"
+                publishedDate:
+                  type: string
+                  format: date
+                  example: "1925-04-10"
+                publisher:
+                  type: string
+                  example: "Scribner"
+                category:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "Classics"
+                    - "Fiction"
+                condition:
+                  type: string
+                  example: "Good"
+                notes:
+                  type: string
+                  example: "Slightly worn cover."
+                userId:
+                  type: integer
+                  example: 1
+              required:
+                - isbn
+                - title
+                - author
+                - userId
+      responses:
+        '201':
+          description: Successfully created a new book listing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Bad request - Invalid input data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation error or invalid input."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+  /api/books/delete/{bookId}:
+    delete:
+      summary: Delete a book listing for the authenticated user.
+      description: Deletes a book listing by its ID.
+      operationId: deleteListing
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Successfully deleted the book listing.
+        '404':
+          description: Book not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Book not found."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+  /api/books/user:
+    get:
+      summary: Get all books listed by the authenticated user.
+      description: Retrieves all books that the authenticated user has listed.
+      operationId: getListedBooks
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user's listed books.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookWithUser'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/books/recommendations:
+    get:
+      summary: Get book recommendations for the authenticated user.
+      description: Retrieves recommended books based on the user's preferences.
+      operationId: getRecommendations
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: preferences
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - "Science Fiction"
+              - "Fantasy"
+      responses:
+        '200':
+          description: Successfully retrieved recommended books.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookWithUser'
+        '400':
+          description: Bad request - Invalid preferences format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid preferences format."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/books/all:
+    get:
+      summary: Get all books or filter by a list of book IDs.
+      description: Retrieves all books or filters the results by a list of book IDs.
+      operationId: getAllBooks
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ids
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Comma-separated list of book IDs to filter.
+            example: "1,2,3"
+      responses:
+        '200':
+          description: Successfully retrieved books.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookWithUser'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/books/search:
+    get:
+      summary: Search for books by title, author, or category.
+      description: Searches for books by title, author, or category excluding books listed by the current user.
+      operationId: searchBooks
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "Gatsby"
+      responses:
+        '200':
+          description: Successfully retrieved search results.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookWithUser'
+        '400':
+          description: Bad request - Missing or invalid query parameter.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Query parameter is required."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/inbox:
+    get:
+      summary: Get all messages received by the authenticated user.
+      description: Retrieves all messages where the authenticated user is the recipient.
+      operationId: getUsersMessages
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user messages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/all:
+    get:
+      summary: Get all messages.
+      description: Retrieves all messages in the system, regardless of the recipient.
+      operationId: getAllMessages
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved all messages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/send:
+    post:
+      summary: Send a new message.
+      description: Sends a new message from the sender to the recipient regarding a book.
+      operationId: sendMessage
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                senderId:
+                  type: integer
+                  example: 1
+                recipientId:
+                  type: integer
+                  example: 2
+                bookId:
+                  type: integer
+                  example: 1
+                message:
+                  type: string
+                  example: "Is this book still available?"
+              required:
+                - senderId
+                - recipientId
+                - bookId
+                - message
+      responses:
+        '201':
+          description: Successfully sent the message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid sender, recipient, or book.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid sender, recipient, or book."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/mark/{id}:
+    put:
+      summary: Mark a message as read.
+      description: Marks the specified message as read by the recipient.
+      operationId: markMessageAsRead
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully marked the message as read.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: Message not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Message not found."
+        '403':
+          description: Not authorized to mark this message as read.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Not authorized to mark this message as read."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/unread/{id}:
+    put:
+      summary: Mark a message as unread.
+      description: Marks the specified message as unread by the recipient.
+      operationId: markMessageAsUnread
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully marked the message as unread.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: Message not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Message not found."
+        '403':
+          description: Not authorized to mark this message as unread.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Not authorized to mark this message as unread."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/messages/delete/{id}:
+    delete:
+      summary: Delete a message.
+      description: Deletes the specified message if the user is the sender or recipient.
+      operationId: deleteMessage
+      tags:
+        - Messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successfully deleted the message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Message deleted successfully."
+        '404':
+          description: Message not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Message not found."
+        '403':
+          description: Not authorized to delete this message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Not authorized to delete this message."
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
